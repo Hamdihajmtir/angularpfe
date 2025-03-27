@@ -1,0 +1,247 @@
+<div class="patient-detail-container">
+  <div class="breadcrumb">
+    <a (click)="goBack()">Dashboard</a>
+    <i class='bx bx-chevron-right'></i>
+    <a class="active">Détails du patient</a>
+  </div>
+
+  <div class="card patient-detail-card" *ngIf="patient">
+    <div class="card-header">
+      <h2>Détails du patient</h2>
+      <div class="actions">
+        <button class="btn-icon" (click)="goBack()"><i class='bx bx-arrow-back'></i></button>
+      </div>
+    </div>
+
+    <div class="patient-profile">
+      <div class="patient-avatar">
+        <img [src]="patient.imageUrl" alt="{{ patient.prenom }} {{ patient.nom }}">
+      </div>
+      
+      <div class="patient-info-container">
+        <h1>{{ patient.prenom }} {{ patient.nom }}</h1>
+        <div class="patient-main-info">
+          <span class="patient-age-gender">{{ patient.genre === 'M' ? 'Homme' : 'Femme' }}, {{ patient.age }} ans</span>
+          <span class="patient-id">ID: {{ patient.id }}</span>
+        </div>
+        
+        <div class="info-grid">
+          <div class="info-item">
+            <label>Téléphone</label>
+            <p><i class='bx bx-phone'></i> {{ patient.phone }}</p>
+          </div>
+          
+          <div class="info-item">
+            <label>CIN</label>
+            <p><i class='bx bx-id-card'></i> {{ patient.cin }}</p>
+          </div>
+          
+          <div class="info-item">
+            <label>Code Bracelet</label>
+            <p class="bracelet-code"><i class='bx bx-barcode'></i> {{ patient.braceletCode }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- <div class="action-buttons">
+      <button class="btn-primary"><i class='bx bx-edit-alt'></i> Modifier</button>
+      <button class="btn-secondary"><i class='bx bx-calendar'></i> Rendez-vous</button>
+      <button class="btn-danger"><i class='bx bx-trash'></i> Supprimer</button>
+    </div> -->
+  </div>
+  
+  <div class="not-found" *ngIf="patientId && !patient">
+    <h2>Patient non trouvé</h2>
+    <p>Le patient avec l'ID {{ patientId }} n'existe pas.</p>
+    <button class="btn-primary" (click)="goBack()">Retour au Dashboard</button>
+  </div>
+</div> 
+
+
+
+
+<div class="patient-status">
+  <div class="vital-sign-current" [ngClass]="{'has-data': hasMeasurements, 'no-data': !hasMeasurements}">
+    <div class="value">{{ heartRate }} bpm</div>
+    <div class="label">Rythme cardiaque</div>
+    <div class="status-indicator" *ngIf="!hasMeasurements">Données non disponibles</div>
+  </div>
+  <div class="vital-sign-current" [ngClass]="{'has-data': hasMeasurements, 'no-data': !hasMeasurements}">
+    <div class="value">{{ oxygenLevel }}%</div>
+    <div class="label">Oxygène</div>
+    <div class="status-indicator" *ngIf="!hasMeasurements">Données non disponibles</div>
+  </div>
+  <div class="vital-sign-current">
+    <div class="value">38°C</div>
+    <div class="label">Température</div>
+  </div>
+</div>
+
+
+<!-- Graphiques des signes vitaux -->
+<div class="vital-signs-charts">
+  <div class="chart-container">
+    <div class="chart-header">
+      <h3>Rythme cardiaque</h3>
+      <div class="chart-period">
+        <button class="period-btn" [class.active]="chartPeriod === 'day'" 
+            (click)="changeChartPeriod('day')">Jour</button>
+        <button class="period-btn" [class.active]="chartPeriod === 'week'" 
+            (click)="changeChartPeriod('week')">Semaine</button>
+        <button class="period-btn" [class.active]="chartPeriod === 'month'" 
+            (click)="changeChartPeriod('month')">Mois</button>
+      </div>
+    </div>
+    <div class="chart-body">
+      <canvas id="heartRateChart"></canvas>
+    </div>
+  </div>
+
+  <div class="chart-container">
+    <div class="chart-header">
+      <h3>Niveau d'oxygène</h3>
+      <div class="chart-period">
+        <button class="period-btn" [class.active]="chartPeriod === 'day'" 
+            (click)="changeChartPeriod('day')">Jour</button>
+        <button class="period-btn" [class.active]="chartPeriod === 'week'" 
+            (click)="changeChartPeriod('week')">Semaine</button>
+        <button class="period-btn" [class.active]="chartPeriod === 'month'" 
+            (click)="changeChartPeriod('month')">Mois</button>
+      </div>
+    </div>
+    <div class="chart-body">
+      <canvas id="oxygenLevelChart"></canvas>
+    </div>
+  </div>
+
+  <div class="chart-container">
+    <div class="chart-header">
+      <h3>Température</h3>
+      <div class="chart-period">
+        <button class="period-btn" [class.active]="chartPeriod === 'day'" 
+            (click)="changeChartPeriod('day')">Jour</button>
+        <button class="period-btn" [class.active]="chartPeriod === 'week'" 
+            (click)="changeChartPeriod('week')">Semaine</button>
+        <button class="period-btn" [class.active]="chartPeriod === 'month'" 
+            (click)="changeChartPeriod('month')">Mois</button>
+      </div>
+    </div>
+    <div class="chart-body">
+      <canvas id="temperatureChart"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- Ajouter cette section après les graphiques et avant l'historique des rendez-vous -->
+<div class="medical-report-section">
+  <div class="section-header">
+    <h3>Rapport Médical</h3>
+    <div class="report-actions">
+      <button class="report-btn print" (click)="printMedicalReport()" 
+        [disabled]="!medicalReportForm.valid">
+        <i class='bx bx-printer'></i> Imprimer
+      </button>
+      <!-- <button class="report-btn download" (click)="downloadPDF()"
+        [disabled]="!medicalReportForm.valid">
+        <i class='bx bx-download'></i> Télécharger PDF
+      </button> -->
+    </div>
+  </div>
+  
+  <div class="report-editor">
+    <form [formGroup]="medicalReportForm" (ngSubmit)="editingMedicalReport()? updateMedicalReport() : addMedicalReport()">
+      <div class="form-group">
+        <label for="reportContent">Notes et observations médicales</label>
+        <textarea 
+          id="reportContent" 
+          formControlName="reportContent" 
+          rows="10" 
+          placeholder="Saisissez ici vos observations cliniques, diagnostics et recommandations...">
+        </textarea>
+      </div>
+      <div class="report-save">
+        <button class="save-btn" 
+          (click)="saveMedicalReport()" 
+          [disabled]="!medicalReportForm.valid">
+          <i class='bx bx-save'></i> Enregistrer le rapport
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="patient-detail-container">
+  <div class="back-button">
+    <button (click)="goBack()"><i class='bx bx-arrow-back'></i> Retour au tableau de bord</button>
+  </div>
+
+  <div *ngIf="isLoading" class="loading">
+    <p>Chargement des détails du patient...</p>
+  </div>
+
+  <div *ngIf="errorMessage" class="error-message">
+    <p>{{ errorMessage }}</p>
+  </div>
+
+  <div *ngIf="patient && !isLoading" class="patient-card-detail">
+    <div class="patient-header">
+      <div class="patient-avatar">
+        <img [src]="patient.imageUrl" alt="{{ patient.prenom }} {{ patient.nom }}">
+      </div>
+      <div class="patient-name">
+        <h1>{{ patient.prenom }} {{ patient.nom }}</h1>
+        <p class="patient-gender-age">{{ patient.genre }}, {{ patient.age }} ans</p>
+      </div>
+      <div class="patient-actions">
+        <button class="edit-btn" (click)="editPatient()"><i class='bx bx-edit-alt'></i> Modifier</button>
+      </div>
+    </div>
+
+    <div class="patient-info-detail">
+      <div class="info-section">
+        <h2>Informations personnelles</h2>
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="label">Nom complet</span>
+            <span class="value">{{ patient.prenom }} {{ patient.nom }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">Âge</span>
+            <span class="value">{{ patient.age }} ans</span>
+          </div>
+          <div class="info-item">
+            <span class="label">Genre</span>
+            <span class="value">{{ patient.genre }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">Téléphone</span>
+            <span class="value">{{ patient.phone }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">CIN</span>
+            <span class="value">{{ patient.cin }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">Code bracelet</span>
+            <span class="value">{{ patient.braceletCode }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="info-section">
+        <h2>Historique</h2>
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="label">Date de création</span>
+            <span class="value">{{ patient.dateCreation }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">Dernière modification</span>
+            <span class="value">{{ patient.dateModification }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,206 @@
+<div>
+	<h1 style="color: #1E5F74;">Dashboard</h1>
+	
+	<div class="breadcrumb">
+		<a href="#">Dashboard</a>
+		<i class='bx bx-chevron-right'></i>
+		<a href="#" class="active">Home</a>
+	</div>
+	
+	<div class="dashboard-grid">
+		<!-- PATIENTS LIST -->
+		<div class="card">
+			<div class="card-header">
+				<h2 style="font-size: 20px;">Liste des patients</h2>
+				<!-- <div class="actions">
+					<button class="btn-icon add-btn" (click)="openPatientModal()"><i class='bx bx-plus'></i></button>
+					<button class="btn-icon"><i class='bx bx-search'></i></button>
+					<button class="btn-icon"><i class='bx bx-filter-alt'></i></button>
+				</div> -->
+			</div>
+			
+			<div class="patients-grid">
+				<div class="patient-card" *ngFor="let patient of patients" (click)="viewPatientDetails(patient)">
+					<div class="patient-card-header">
+						<div class="patient-avatar">
+							<img [src]="patient.imageUrl" alt="{{ patient.prenom }} {{ patient.nom }}">
+						</div>
+						<div class="patient-actions">
+							<button class="edit-btn" (click)="editPatient(patient); $event.stopPropagation()"><i class='bx bx-edit-alt'></i></button>
+							<button class="delete-btn" (click)="deletePatient(patient.id); $event.stopPropagation()"><i class='bx bx-trash'></i></button>
+						</div>
+					</div>
+					<div class="patient-info">
+						<h3>{{ patient.prenom }} {{ patient.nom }}</h3>
+						<p class="patient-gender-age">{{ patient.genre === 'M' ? 'Homme' : 'Femme' }}, {{ patient.age }} ans</p>
+						<div class="patient-details">
+							<p><i class='bx bx-phone'></i> {{ patient.phone }}</p>
+							<p><i class='bx bx-id-card'></i> {{ patient.cin }}</p>
+							<p class="bracelet-code"><i class='bx bx-barcode'></i> {{ patient.braceletCode }}</p>
+						</div>
+					</div>
+				</div>
+				
+				<!-- Carte "Ajouter un patient" -->
+				<div class="patient-card add-patient-card" (click)="openPatientModal()">
+					<div class="add-patient-content">
+						<i class='bx bx-plus-circle'></i>
+						<p>Ajouter un patient</p>
+					</div>
+				</div>
+			</div>
+		</div>
+		
+		<!-- TODOS AUJOURD'HUI -->
+		<div class="card">
+			<div class="card-header">
+				<h2>Rendez-vous d'aujourd'hui</h2>
+				<!-- <div class="actions">
+					<button class="btn-icon add-btn" [routerLink]="['/rendezvous']"><i class='bx bx-plus'></i></button>
+					<button class="btn-icon"><i class='bx bx-filter-alt'></i></button>
+				</div> -->
+			</div>
+			<div class="todo-list">
+				<div class="todo-item" *ngFor="let rendezvous of rendezvousList" [ngClass]="rendezvous.status">
+					<div class="todo-item-header">
+						<div class="todo-item-title">{{ rendezvous.patient.nom }} {{ rendezvous.patient.prenom }}</div>
+						<div class="todo-item-status" [ngClass]="rendezvous.status">
+							<span *ngIf="rendezvous.status === 'confirmed'">Confirmé</span>
+							<span *ngIf="rendezvous.status === 'pending'">En attente</span>
+							<span *ngIf="rendezvous.status === 'cancelled'">Annulé</span>
+						</div>
+					</div>
+					<div class="todo-item-time">{{ rendezvous.heure }}</div>
+				</div>
+				<div class="todo-empty" *ngIf="!rendezvousList.length">
+					Aucun rendez-vous pour aujourd'hui
+				</div>
+			</div>
+		</div>
+		
+		<!-- TODOS DEMAIN -->
+		<div class="card">
+			<div class="card-header">
+				<h2>Rendez-vous de demain</h2>
+				<!-- <div class="actions">
+					<button class="btn-icon add-btn" [routerLink]="['/rendezvous']"><i class='bx bx-plus'></i></button>
+					<button class="btn-icon"><i class='bx bx-filter-alt'></i></button>
+				</div> -->
+			</div>
+			<div class="todo-list">
+				<div class="todo-item" *ngFor="let rendezvous of tomorrowRendezvousList" [ngClass]="rendezvous.status">
+					<div class="todo-item-header">
+						<div class="todo-item-title">{{ rendezvous.patient.nom }} {{ rendezvous.patient.prenom }}</div>
+						<div class="todo-item-status" [ngClass]="rendezvous.status">
+							<span *ngIf="rendezvous.status === 'confirmed'">Confirmé</span>
+							<span *ngIf="rendezvous.status === 'pending'">En attente</span>
+							<span *ngIf="rendezvous.status === 'cancelled'">Annulé</span>
+						</div>
+					</div>
+					<div class="todo-item-time">{{ rendezvous.heure }}</div>
+				</div>
+				<div class="todo-empty" *ngIf="!tomorrowRendezvousList.length">
+					Aucun rendez-vous pour demain
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- MODAL AJOUT PATIENT avec design amélioré -->
+<div class="modal-overlay" [class.active]="isPatientModalOpen" (click)="closePatientModal($event)">
+	<div class="modal-container">
+		<div class="modal-header">
+			<h3>{{ editingPatient ? 'Modifier le patient' : 'Ajouter un nouveau patient' }}</h3>
+			<button class="modal-close" (click)="closePatientModal($event)"><i class='bx bx-x'></i></button>
+		</div>
+		<div class="modal-body">
+			<form [formGroup]="patientForm" (ngSubmit)="editingPatient ? updatePatient() : addPatient()">
+				<div class="form-row">
+					<div class="form-group image-upload-container">
+						<label>Photo du patient</label>
+						<div class="image-upload">
+							<div class="preview" *ngIf="imagePreview">
+								<img [src]="imagePreview" alt="Aperçu de l'image">
+							</div>
+							<div class="preview empty" *ngIf="!imagePreview">
+								<i class='bx bx-user-circle'></i>
+							</div>
+							<label for="image" class="upload-btn">
+								<i class='bx bx-upload'></i> Choisir une image
+							</label>
+							<input type="file" id="image" (change)="onImagePicked($event)" accept="image/*">
+						</div>
+					</div>
+					<div class="form-column">
+						<div class="form-row">
+							<div class="form-group">
+								<label for="nom">Nom</label>
+								<input type="text" id="nom" formControlName="nom" placeholder="Nom du patient">
+								<small class="error" *ngIf="patientForm.get('nom')?.invalid && patientForm.get('nom')?.touched">
+									Veuillez saisir un nom
+								</small>
+							</div>
+							<div class="form-group">
+								<label for="prenom">Prénom</label>
+								<input type="text" id="prenom" formControlName="prenom" placeholder="Prénom du patient">
+								<small class="error" *ngIf="patientForm.get('prenom')?.invalid && patientForm.get('prenom')?.touched">
+									Veuillez saisir un prénom
+								</small>
+							</div>
+						</div>
+						<div class="form-row">
+							<div class="form-group">
+								<label for="age">Âge</label>
+								<input type="number" id="age" formControlName="age" placeholder="Âge du patient">
+								<small class="error" *ngIf="patientForm.get('age')?.invalid && patientForm.get('age')?.touched">
+									Veuillez saisir un âge valide
+								</small>
+							</div>
+							<div class="form-group">
+								<label for="genre">Genre</label>
+								<select id="genre" formControlName="genre">
+									<option value="" disabled>Sélectionner</option>
+									<option value="M">Homme</option>
+									<option value="F">Femme</option>
+								</select>
+								<small class="error" *ngIf="patientForm.get('genre')?.invalid && patientForm.get('genre')?.touched">
+									Veuillez sélectionner un genre
+								</small>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="form-row">
+					<div class="form-group">
+						<label for="phone">Téléphone</label>
+						<input type="tel" id="phone" formControlName="phone" placeholder="Numéro de téléphone">
+						<small class="error" *ngIf="patientForm.get('phone')?.invalid && patientForm.get('phone')?.touched">
+							Veuillez saisir un numéro de téléphone valide (10 chiffres)
+						</small>
+					</div>
+					<div class="form-group">
+						<label for="cin">CIN</label>
+						<input type="text" id="cin" formControlName="cin" placeholder="Carte d'identité nationale">
+						<small class="error" *ngIf="patientForm.get('cin')?.invalid && patientForm.get('cin')?.touched">
+							Veuillez saisir un CIN valide
+						</small>
+					</div>
+				</div>
+				<div class="form-group">
+					<label for="braceletCode">Code Bracelet</label>
+					<input type="text" id="braceletCode" formControlName="braceletCode" placeholder="Code du bracelet">
+					<small class="error" *ngIf="patientForm.get('braceletCode')?.invalid && patientForm.get('braceletCode')?.touched">
+						Veuillez saisir un code de bracelet
+					</small>
+				</div>
+				<div class="form-actions">
+					<button type="button" class="btn-secondary" (click)="closePatientModal($event)">Annuler</button>
+					<button type="submit" class="btn-primary" [disabled]="patientForm.invalid">
+						{{ editingPatient ? 'Mettre à jour' : 'Ajouter' }}
+					</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>

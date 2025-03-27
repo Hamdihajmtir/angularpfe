@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<!-- Boxicons -->
+	<link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+	<link href='https://unpkg.com/boxicons@2.1.4/dist/boxicons.js' rel='stylesheet'>
+	<title>AdminHub</title>
+</head>
+<body>
+<section id="sidebar" #sidebar>
+		<a href="#" class="brand">
+			<!-- <i class='bx bxs-smile  bx-lg'></i> -->
+			<fa-icon [icon]="faHeartPulse" class="heart-icon"></fa-icon>
+
+		<span>CardioTrack</span>
+		</a>
+		<ul class="side-menu">
+		<li routerLinkActive="active">
+			<a routerLink="/dashboard">
+				<i class='bx bxs-dashboard'></i>
+				<span>Dashboard</span>
+			</a>
+		</li>
+		<li routerLinkActive="active">
+			<a routerLink="/calendrier">
+				<i class='bx bx-calendar'></i>
+				<span>Calendrier</span>
+			</a>
+		</li>
+		<li routerLinkActive="active">
+			<a routerLink="/parametre">
+				<i class='bx bx-cog'></i>
+				<span>Paramètres</span>
+			</a>
+		</li>
+		<li>
+			<a href="#" class="logout" (click)="logout($event)">
+				<i class='bx bx-log-out'></i>
+				<span>Logout</span>
+			</a>
+		</li>
+	</ul>
+</section>
+<!-- SIDEBAR -->
+
+
+
+	<!-- CONTENT -->
+	<section id="content">
+		<!-- NAVBAR -->
+<nav>
+    <div class="left">
+        <i class='bx bx-menu bx-sm' #menuBar (click)="toggleSidebar()" 
+           [ngStyle]="{'color': isDarkMode ? '#4FCBEB' : '#1E5F74'}"></i>&nbsp;&nbsp;&nbsp;
+        <a href="#" class="nav-link" style="font-size: 20px;">Categories</a>
+    </div>
+    
+    <form action="#" #searchForm>
+        <input type="search" placeholder="Search...">
+        <button type="submit" (click)="toggleSearchForm($event, searchForm, searchIcon)">
+            <i class='bx bx-search' #searchIcon></i>
+        </button>
+    </form>
+    
+    <div class="right">
+        <!-- <div class="theme-toggle">
+            <input type="checkbox" class="checkbox" id="switch-mode" #switchMode hidden 
+                   [checked]="isDarkMode" (change)="toggleDarkMode()">
+            <label for="switch-mode" class="toggle-label" [class.dark-active]="isDarkMode">
+                <i class='bx bx-moon'></i>
+                <i class='bx bx-sun'></i>
+                <span class="ball" [ngStyle]="{'background-color': isDarkMode ? '#4FCBEB' : '#1E5F74'}"></span>
+            </label>
+        </div>
+         -->
+        <a href="#" class="notification" (click)="toggleNotificationMenu($event)">
+            <i class='bx bx-bell' [ngStyle]="{'color': isDarkMode ? '#4FCBEB' : '#1E5F74'}"></i>
+            <!-- <span class="badge">8</span> -->
+        </a>
+        
+        <a href="#" class="profile" (click)="toggleProfileMenu($event)">
+            <img src="https://placehold.co/600x400/png" alt="Profile">
+        </a>
+        
+        <div class="notification-menu" id="notificationMenu">
+            <ul>
+                <li>New message from John</li>
+                <li>Your order has been shipped</li>
+                <li>New comment on your post</li>
+                <li>Update available for your app</li>
+                <li>Reminder: Meeting at 3PM</li>
+            </ul>
+        </div>
+        
+        <div class="profile-menu" id="profileMenu">
+            <ul>
+                <li><a href="#">My Profile</a></li>
+                <li><a href="#">Settings</a></li>
+                <li><a href="#">Log Out</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+<!-- NAVBAR -->
+
+
+		<!-- MAIN -->
+		<main>
+			<!-- Remplacer le contenu conditionnel par router-outlet -->
+			<router-outlet></router-outlet>
+		</main>
+		<!-- MAIN -->
+	</section>
+	<!-- CONTENT -->
+
+	<!-- MODAL AJOUT PATIENT avec design amélioré
+	<div class="modal-overlay" [class.active]="isPatientModalOpen" (click)="closePatientModal($event)">
+		<div class="modal-container">
+			<div class="modal-header">
+				<h3>{{ editingPatient ? 'Modifier le patient' : 'Ajouter un nouveau patient' }}</h3>
+				<button class="modal-close" (click)="closePatientModal($event)"><i class='bx bx-x'></i></button>
+			</div>
+			<div class="modal-body">
+				<form [formGroup]="patientForm" (ngSubmit)="editingPatient ? updatePatient() : addPatient()">
+					<div class="form-row">
+						<div class="form-group image-upload-container">
+							<label>Photo du patient</label>
+							<div class="image-upload">
+								<div class="preview" *ngIf="imagePreview">
+									<img [src]="imagePreview" alt="Aperçu de l'image">
+								</div>
+								<div class="preview empty" *ngIf="!imagePreview">
+									<i class='bx bx-user-circle'></i>
+								</div>
+								<label for="image" class="upload-btn">
+									<i class='bx bx-upload'></i> Choisir une image
+								</label>
+								<input type="file" id="image" (change)="onImagePicked($event)" accept="image/*">
+							</div>
+						</div>
+						<div class="form-column">
+							<div class="form-row">
+								<div class="form-group">
+									<label for="nom">Nom</label>
+									<input type="text" id="nom" formControlName="nom" placeholder="Nom du patient">
+									<small class="error" *ngIf="patientForm.get('nom')?.invalid && patientForm.get('nom')?.touched">
+										Veuillez saisir un nom
+									</small>
+								</div>
+								<div class="form-group">
+									<label for="prenom">Prénom</label>
+									<input type="text" id="prenom" formControlName="prenom" placeholder="Prénom du patient">
+									<small class="error" *ngIf="patientForm.get('prenom')?.invalid && patientForm.get('prenom')?.touched">
+										Veuillez saisir un prénom
+									</small>
+								</div>
+							</div>
+							<div class="form-row">
+								<div class="form-group">
+									<label for="age">Âge</label>
+									<input type="number" id="age" formControlName="age" placeholder="Âge du patient">
+									<small class="error" *ngIf="patientForm.get('age')?.invalid && patientForm.get('age')?.touched">
+										Veuillez saisir un âge valide
+									</small>
+								</div>
+								<div class="form-group">
+									<label for="genre">Genre</label>
+									<select id="genre" formControlName="genre">
+										<option value="" disabled>Sélectionner</option>
+										<option value="M">Homme</option>
+										<option value="F">Femme</option>
+									</select>
+									<small class="error" *ngIf="patientForm.get('genre')?.invalid && patientForm.get('genre')?.touched">
+										Veuillez sélectionner un genre
+									</small>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="form-row">
+						<div class="form-group">
+							<label for="phone">Téléphone</label>
+							<input type="tel" id="phone" formControlName="phone" placeholder="Numéro de téléphone">
+							<small class="error" *ngIf="patientForm.get('phone')?.invalid && patientForm.get('phone')?.touched">
+								Veuillez saisir un numéro de téléphone valide (10 chiffres)
+							</small>
+						</div>
+						<div class="form-group">
+							<label for="cin">CIN</label>
+							<input type="text" id="cin" formControlName="cin" placeholder="Carte d'identité nationale">
+							<small class="error" *ngIf="patientForm.get('cin')?.invalid && patientForm.get('cin')?.touched">
+								Veuillez saisir un CIN valide
+							</small>
+						</div>
+					</div>
+					<div class="form-group">
+						<label for="braceletCode">Code Bracelet</label>
+						<input type="text" id="braceletCode" formControlName="braceletCode" placeholder="Code du bracelet">
+						<small class="error" *ngIf="patientForm.get('braceletCode')?.invalid && patientForm.get('braceletCode')?.touched">
+							Veuillez saisir un code de bracelet
+						</small>
+					</div>
+					<div class="form-actions">
+						<button type="button" class="btn-secondary" (click)="closePatientModal($event)">Annuler</button>
+						<button type="submit" class="btn-primary" [disabled]="patientForm.invalid">
+							{{ editingPatient ? 'Mettre à jour' : 'Ajouter' }}
+						</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div> -->
+
+<!-- <div class="app-container" [ngClass]="currentTheme">
+  <header>
+    <button class="theme-toggle" (click)="toggleTheme()">
+      <i class="material-icons">{{ currentTheme === 'theme-dark' ? 'light_mode' : 'dark_mode' }}</i>
+    </button>
+  </header>
+  
+   <main>
+    <router-outlet></router-outlet>
+  </main> 
+  
+</div>--></body> 

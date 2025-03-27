@@ -1,0 +1,51 @@
+// Importer le fichier de thèmes
+@import 'styles/themes';
+
+// Application des variables de thème
+body {
+  background-color: var(--background-primary);
+  color: var(--text-primary);
+  margin: 0;
+  font-family: sans-serif;
+}
+
+// Styles généraux basés sur le thème
+h1, h2, h3, h4, h5, h6 {
+  color: var(--text-primary);
+}
+
+p, span, div {
+  color: var(--text-primary);
+}
+
+a {
+  color: var(--accent-color);
+}
+
+input, textarea, select {
+  background-color: var(--background-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+
+button {
+  background-color: var(--accent-color);
+  color: white;
+  border: none;
+}
+
+.card {
+  background-color: var(--card-background);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 2px 8px var(--shadow-color);
+}
+
+header {
+  background-color: var(--header-background);
+  border-bottom: 1px solid var(--border-color);
+}
+
+footer {
+  background-color: var(--footer-background);
+  border-top: 1px solid var(--border-color);
+} 

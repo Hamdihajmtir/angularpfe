@@ -1,0 +1,116 @@
+<div class="signup-container">
+  <div class="signup-card">
+    <div class="signup-header">
+      <fa-icon [icon]="faUserDoctor" style="font-size: 80px; color: #1E5F74;"></fa-icon>
+      <h1>CardioTrack</h1>
+      <p>Créer un compte</p>
+    </div>
+    
+    <form [formGroup]="signupForm" (ngSubmit)="onSubmit()">
+      <div class="form-group">
+        <label for="nom">
+          <fa-icon [icon]="faUser"></fa-icon> Nom
+        </label>
+        <input 
+          type="text" 
+          id="nom" 
+          formControlName="nom" 
+          placeholder="Entrez votre nom"
+          [class.is-invalid]="signupForm.get('nom')?.invalid && signupForm.get('nom')?.touched"
+        >
+        <div class="error-message" *ngIf="signupForm.get('nom')?.invalid && signupForm.get('nom')?.touched">
+          <small *ngIf="signupForm.get('nom')?.errors?.['required']">Nom requis</small>
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label for="prenom">
+          <fa-icon [icon]="faUser"></fa-icon> Prénom
+        </label>
+        <input 
+          type="text" 
+          id="prenom" 
+          formControlName="prenom" 
+          placeholder="Entrez votre prénom"
+          [class.is-invalid]="signupForm.get('prenom')?.invalid && signupForm.get('prenom')?.touched"
+        >
+        <div class="error-message" *ngIf="signupForm.get('prenom')?.invalid && signupForm.get('prenom')?.touched">
+          <small *ngIf="signupForm.get('prenom')?.errors?.['required']">Prénom requis</small>
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label for="email">
+          <fa-icon [icon]="faEnvelope"></fa-icon> Email
+        </label>
+        <input 
+          type="email" 
+          id="email" 
+          formControlName="email" 
+          placeholder="Entrez votre email"
+          [class.is-invalid]="signupForm.get('email')?.invalid && signupForm.get('email')?.touched"
+        >
+        <div class="error-message" *ngIf="signupForm.get('email')?.invalid && signupForm.get('email')?.touched">
+          <small *ngIf="signupForm.get('email')?.errors?.['required']">Email requis</small>
+          <small *ngIf="signupForm.get('email')?.errors?.['email']">Format d'email invalide</small>
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label for="password">
+          <fa-icon [icon]="faLock"></fa-icon> Mot de passe
+        </label>
+        <input 
+          type="password" 
+          id="password" 
+          formControlName="password" 
+          placeholder="Entrez votre mot de passe"
+          [class.is-invalid]="signupForm.get('password')?.invalid && signupForm.get('password')?.touched"
+        >
+        <div class="error-message" *ngIf="signupForm.get('password')?.invalid && signupForm.get('password')?.touched">
+          <small *ngIf="signupForm.get('password')?.errors?.['required']">Mot de passe requis</small>
+          <small *ngIf="signupForm.get('password')?.errors?.['minlength']">Le mot de passe doit contenir au moins 6 caractères</small>
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label for="confirmPassword">
+          <fa-icon [icon]="faLock"></fa-icon> Confirmer le mot de passe
+        </label>
+        <input 
+          type="password" 
+          id="confirmPassword" 
+          formControlName="confirmPassword" 
+          placeholder="Confirmez votre mot de passe"
+          [class.is-invalid]="signupForm.get('confirmPassword')?.invalid && signupForm.get('confirmPassword')?.touched"
+        >
+        <div class="error-message" *ngIf="signupForm.get('confirmPassword')?.invalid && signupForm.get('confirmPassword')?.touched">
+          <small *ngIf="signupForm.get('confirmPassword')?.errors?.['required']">Confirmation du mot de passe requise</small>
+        </div>
+        <div class="error-message" *ngIf="signupForm.errors?.['notSame']">
+          <small>Les mots de passe ne correspondent pas</small>
+        </div>
+      </div>
+      
+      <div class="form-group terms">
+        <input type="checkbox" id="terms" formControlName="terms">
+        <label for="terms">J'accepte les <a href="#">conditions d'utilisation</a> et la <a href="#">politique de confidentialité</a></label>
+      </div>
+      
+      <!-- Affichage des erreurs d'inscription -->
+      <div class="error-message" *ngIf="errorMessage">
+        {{ errorMessage }}
+      </div>
+      
+      <button type="submit" class="btn-signup" [disabled]="signupForm.invalid || isLoading">
+        <fa-icon [icon]="faUserPlus"></fa-icon> 
+        <span *ngIf="!isLoading">S'inscrire</span>
+        <span *ngIf="isLoading">Chargement...</span>
+      </button>
+      
+      <div class="login-link">
+        <p>Déjà inscrit? <a (click)="goToLogin()">Se connecter</a></p>
+      </div>
+    </form>
+  </div>
+</div>

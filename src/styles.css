@@ -1,0 +1,110 @@
+/* You can add global styles to this file, and also import other style files */
+
+/* Variables pour le thème light */
+:root {
+  --primary-color: #1E5F74;
+  --primary-dark: #164956;
+  --primary-light: #2B7D95;
+  --accent-color: #4FCBEB;
+  --accent-light: #8eeeff;
+  
+  --bg-primary: #f8fafc;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #f1f5f9;
+  
+  --text-primary: #1e293b;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+  
+  --border-color: #e2e8f0;
+  --shadow-color: rgba(0, 0, 0, 0.05);
+  
+  --success: #28C76F;
+  --warning: #FF9F43;
+  --danger: #EA5455;
+  --info: #00CFE8;
+}
+
+/* Variables pour le thème dark */
+body.dark {
+  --primary-color: #4FCBEB;
+  --primary-dark: #3db5d3;
+  --primary-light: #8eeeff;
+  --accent-color: #1E5F74;
+  --accent-light: #2B7D95;
+  
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --bg-tertiary: #334155;
+  
+  --text-primary: #f8fafc;
+  --text-secondary: #e2e8f0;
+  --text-muted: #94a3b8;
+  
+  --border-color: #334155;
+  --shadow-color: rgba(0, 0, 0, 0.25);
+}
+
+/* Styles globaux */
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+}
+
+/* Support RTL pour l'arabe */
+body.rtl {
+  direction: rtl;
+  text-align: right;
+}
+
+/* Styles de base pour les cartes */
+.card {
+  background-color: var(--bg-secondary);
+  border-radius: 12px;
+  box-shadow: 0 5px 20px var(--shadow-color);
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+/* Styles de base pour les boutons */
+button {
+  font-family: 'Inter', sans-serif;
+}
+
+/* Styles de base pour les liens */
+a {
+  color: var(--primary-color);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+a:hover {
+  color: var(--primary-dark);
+}
+
+body.dark a:hover {
+  color: var(--primary-light);
+}
+
+/* Animation de transition pour le thème */
+* {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Autres éléments */
+.sidebar {
+  background-color: var(--card-background);
+  border-right: 1px solid var(--shadow-color);
+}
+
+/* Styles de composant génériques */
+app-layout {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
