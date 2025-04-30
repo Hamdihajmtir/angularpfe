@@ -126,6 +126,49 @@ export class FirebaseService {
   // Ajouter un patient pour un médecin
   async addPatient(doctorId: string, patientData: any) {
     try {
+      // Vérifier le format du CIN (exactement 8 chiffres)
+      const cinRegex = /^[0-9]{8}$/;
+      if (!cinRegex.test(patientData.cin)) {
+        console.log("Format CIN invalide. Le CIN doit contenir exactement 8 chiffres :", patientData.cin);
+        return { success: false, error: "Le CIN doit contenir exactement 8 chiffres." };
+      }
+
+      // Vérifier si le CIN existe déjà dans la base de données
+      const medecinsRef = ref(this.db, 'medecins');
+      const medecinsSnapshot = await get(medecinsRef);
+      
+      if (medecinsSnapshot.exists()) {
+        const medecinsData = medecinsSnapshot.val();
+        
+        // Vérifier parmi les médecins
+        for (const medecin of Object.values(medecinsData) as any[]) {
+          if (medecin.cin === patientData.cin) {
+            console.log("Ce CIN existe déjà pour un médecin:", patientData.cin);
+            return { success: false, error: "Ce CIN existe déjà dans la base de données." };
+          }
+
+          // Vérifier parmi les secrétaires de chaque médecin
+          if (medecin.secretaires) {
+            for (const secretaire of Object.values(medecin.secretaires) as any[]) {
+              if (secretaire.cin === patientData.cin) {
+                console.log("Ce CIN existe déjà pour un secrétaire:", patientData.cin);
+                return { success: false, error: "Ce CIN existe déjà dans la base de données." };
+              }
+            }
+          }
+
+          // Vérifier parmi les patients de chaque médecin
+          if (medecin.patients) {
+            for (const patient of Object.values(medecin.patients) as any[]) {
+              if (patient.cin === patientData.cin) {
+                console.log("Ce CIN existe déjà pour un patient:", patientData.cin);
+                return { success: false, error: "Ce CIN existe déjà dans la base de données." };
+              }
+            }
+          }
+        }
+      }
+
       const patientId = new Date().getTime().toString(); // Génère un ID unique basé sur le timestamp
       await set(ref(this.db, `medecins/${doctorId}/patients/${patientId}`), {
         id: patientId,
