@@ -1,13 +1,13 @@
 <div class="head-title">
   <div class="left">
-    <h1 style="color: #1E5F74;">Calendrier des Rendez-vous</h1>
+    <h1 style="color: #1E5F74;">{{ 'appointmentsCalendar' | translate }}</h1>
     <!-- <ul class="breadcrumb">
       <li>
-        <a href="javascript:void(0)" (click)="backToDashboard()">Dashboard</a>
+        <a href="javascript:void(0)" (click)="backToDashboard()">{{ 'dashboard' | translate }}</a>
       </li>
       <li><i class='bx bx-chevron-right'></i></li>
       <li>
-        <a class="active" href="#">Calendrier</a>
+        <a class="active" href="#">{{ 'calendar' | translate }}</a>
       </li>
     </ul> -->
   </div>
@@ -26,29 +26,29 @@
       <button class="nav-btn" (click)="navigateToPreviousMonth()"><i class='bx bx-chevron-left'></i></button>
       <h2>{{ getCurrentMonthYear() }}</h2>
       <button class="nav-btn" (click)="navigateToNextMonth()"><i class='bx bx-chevron-right'></i></button>
-      <button class="btn-download" (click)="goToCurrentMonth()"><span class="text">Aujourd'hui</span></button>
+      <button class="btn-download" (click)="goToCurrentMonth()"><span class="text">{{ 'today' | translate }}</span></button>
     </div>
     <div class="calendar-views">
-      <button class="view-btn" [class.active]="calendarView === 'month'" (click)="changeCalendarView('month')">Mois</button>
-      <button class="view-btn" [class.active]="calendarView === 'week'" (click)="changeCalendarView('week')">Semaine</button>
-      <button class="view-btn" [class.active]="calendarView === 'day'" (click)="changeCalendarView('day')">Jour</button>
+      <button class="view-btn" [class.active]="calendarView === 'month'" (click)="changeCalendarView('month')">{{ 'month' | translate }}</button>
+      <button class="view-btn" [class.active]="calendarView === 'week'" (click)="changeCalendarView('week')">{{ 'week' | translate }}</button>
+      <button class="view-btn" [class.active]="calendarView === 'day'" (click)="changeCalendarView('day')">{{ 'day' | translate }}</button>
     </div>
   </div>
   
   <div class="calendar" *ngIf="calendarView === 'month'">
     <!-- En-tête des jours de la semaine -->
-    <span class="dayname">Lundi</span>
-    <span class="dayname">Mardi</span>
-    <span class="dayname">Mercredi</span>
-    <span class="dayname">Jeudi</span>
-    <span class="dayname">Vendredi</span>
-    <span class="dayname">Samedi</span>
-    <span class="dayname">Dimanche</span>
+    <span class="dayname">{{ 'monday' | translate }}</span>
+    <span class="dayname">{{ 'tuesday' | translate }}</span>
+    <span class="dayname">{{ 'wednesday' | translate }}</span>
+    <span class="dayname">{{ 'thursday' | translate }}</span>
+    <span class="dayname">{{ 'friday' | translate }}</span>
+    <span class="dayname">{{ 'saturday' | translate }}</span>
+    <span class="dayname">{{ 'sunday' | translate }}</span>
     
     <!-- Jours du mois générés dynamiquement -->
     <div class="day" *ngFor="let day of calendarDays" 
        (click)="openAppointmentForm(day.day, day.month, day.year)"
-       [ngClass]="{'today': day.isToday, 'other-month': !day.isCurrentMonth}">
+       [ngClass]="{'today': day.isToday, 'other-month': !day.isCurrentMonth, 'past-day': day.isPast}">
       <div class="day-number">{{ day.day }}</div>
       <div class="day-content" *ngIf="day.appointments && day.appointments.length > 0">
         <!-- Indicateurs de rendez-vous selon le statut -->
@@ -73,28 +73,28 @@
           
           <!-- Ajout des 5 icônes d'actions -->
           <div class="appointment-actions" (click)="$event.stopPropagation()">
-            <button class="action-btn edit" title="Modifier" (click)="editAppointment(apt.id)">
+            <button class="action-btn edit" title="{{ 'edit' | translate }}" (click)="editAppointment(apt.id)">
               <i class='bx bx-edit-alt'></i>
             </button>
-            <button class="action-btn pending" title="Mettre en attente" 
+            <button class="action-btn pending" title="{{ 'markPending' | translate }}" 
                 *ngIf="apt.status !== 'pending'" (click)="markAppointmentAsPending(apt.id)">
               <i class='bx bx-time'></i>
             </button>
-            <button class="action-btn confirm" title="Confirmer" 
+            <button class="action-btn confirm" title="{{ 'confirm' | translate }}" 
                 *ngIf="apt.status !== 'confirmed'" (click)="confirmAppointment(apt.id)">
               <i class='bx bx-check'></i>
             </button>
-            <button class="action-btn cancel" title="Annuler" 
+            <button class="action-btn cancel" title="{{ 'cancel' | translate }}" 
                 *ngIf="apt.status !== 'cancelled'" (click)="cancelAppointment(apt.id)">
               <i class='bx bx-x'></i>
             </button>
-            <button class="action-btn delete" title="Supprimer" (click)="deleteAppointment(apt.id)">
+            <button class="action-btn delete" title="{{ 'delete' | translate }}" (click)="deleteAppointment(apt.id)">
               <i class='bx bx-trash'></i>
             </button>
           </div>
         </div>
         <div class="more-appointments" *ngIf="day.appointments.length > 2">
-          +{{ day.appointments.length - 2 }} plus
+          +{{ day.appointments.length - 2 }} {{ 'more' | translate }}
         </div>
       </div>
     </div>
@@ -105,8 +105,8 @@
     <div class="week-header">
       <div class="week-hour-header"></div>
       <div class="week-day-header" *ngFor="let day of weekDays">
-        <div class="week-day-name">{{ ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'][day.date.getDay() === 0 ? 6 : day.date.getDay() - 1] }}</div>
-        <div class="week-date" [class.today]="day.isToday">{{ day.day }}</div>
+        <div class="week-day-name">{{ ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'][day.date.getDay() === 0 ? 6 : day.date.getDay() - 1] | translate | slice:0:3 }}</div>
+        <div class="week-date" [class.today]="day.isToday" [class.past-day]="day.isPast">{{ day.day }}</div>
       </div>
     </div>
     
@@ -114,7 +114,8 @@
       <div class="week-time-slot" *ngFor="let hour of getHoursOfDay()">
         <div class="week-hour">{{ hour }}</div>
         <div class="week-day-slot" *ngFor="let day of weekDays"
-           (click)="openAppointmentForm(day.day, day.month, day.year)">
+           (click)="openAppointmentForm(day.day, day.month, day.year)"
+           [class.past-day]="day.isPast">
           <div class="week-appointment" *ngFor="let apt of getAppointmentsForHour(day.day, day.month, day.year, hour)"
              [ngClass]="apt.status">
             {{ apt.title }}
@@ -133,7 +134,8 @@
     <div class="day-body">
       <div class="day-time-slot" *ngFor="let hour of getHoursOfDay()">
         <div class="day-hour">{{ hour }}</div>
-        <div class="day-hour-slot" (click)="openAppointmentForm(selectedDate.getDate(), selectedDate.getMonth(), selectedDate.getFullYear())">
+        <div class="day-hour-slot" (click)="openAppointmentForm(selectedDate.getDate(), selectedDate.getMonth(), selectedDate.getFullYear())"
+             [class.past-day]="selectedDate < today">
           <div class="day-appointment" *ngFor="let apt of getAppointmentsForHour(selectedDate.getDate(), selectedDate.getMonth(), selectedDate.getFullYear(), hour)"
              [ngClass]="apt.status">
             <div class="day-appointment-title">{{ apt.title }}</div>
@@ -151,66 +153,66 @@
 <div class="calendar-legend">
   <div class="legend-item">
     <div class="legend-color confirmed"></div>
-    <span>Rendez-vous confirmé</span>
+    <span>{{ 'confirmedAppointment' | translate }}</span>
   </div>
   <div class="legend-item">
     <div class="legend-color pending"></div>
-    <span>En attente de confirmation</span>
+    <span>{{ 'pendingConfirmation' | translate }}</span>
   </div>
   <div class="legend-item">
     <div class="legend-color cancelled"></div>
-    <span>Rendez-vous annulé</span>
+    <span>{{ 'cancelledAppointment' | translate }}</span>
   </div>
 </div>
 
 <!-- Ajouter un affichage détaillé des rendez-vous du jour -->
 <div class="day-appointments" *ngIf="selectedDay">
-  <h3>Rendez-vous du {{ selectedDay }}</h3>
+  <h3>{{ 'appointmentsFor' | translate }} {{ selectedDay }}</h3>
   <div class="appointment-list">
     <div class="appointment-item" *ngFor="let apt of getPatientAppointments(selectedPatient?.id)" [ngClass]="apt.status">
       <div class="appointment-item-header">
         <div class="appointment-item-title">{{ apt.title }}</div>
         <div class="appointment-item-time">{{ apt.startTime }} - {{ apt.endTime }}</div>
         <div class="appointment-item-status">
-          <span *ngIf="apt.status === 'confirmed'" class="status-badge confirmed">Confirmé</span>
-          <span *ngIf="apt.status === 'pending'" class="status-badge pending">En attente</span>
-          <span *ngIf="apt.status === 'cancelled'" class="status-badge cancelled">Annulé</span>
+          <span *ngIf="apt.status === 'confirmed'" class="status-badge confirmed">{{ 'confirmed' | translate }}</span>
+          <span *ngIf="apt.status === 'pending'" class="status-badge pending">{{ 'pending' | translate }}</span>
+          <span *ngIf="apt.status === 'cancelled'" class="status-badge cancelled">{{ 'cancelled' | translate }}</span>
         </div>
       </div>
       <div class="appointment-item-details">
         <div class="appointment-item-patient" *ngIf="getPatientForAppointment(apt.patientId)">
-          Patient: {{ getPatientForAppointment(apt.patientId)?.prenom }} {{ getPatientForAppointment(apt.patientId)?.nom }}
+          {{ 'patient' | translate }}: {{ getPatientForAppointment(apt.patientId)?.prenom }} {{ getPatientForAppointment(apt.patientId)?.nom }}
         </div>
         <div class="appointment-item-description" *ngIf="apt.description">
           {{ apt.description }}
         </div>
       </div>
       <div class="appointment-item-actions">
-        <button class="action-btn edit" title="Modifier" (click)="editAppointment(apt.id)">
-          Modifier
+        <button class="action-btn edit" title="{{ 'edit' | translate }}" (click)="editAppointment(apt.id)">
+          {{ 'edit' | translate }}
         </button>
         <button *ngIf="apt.status !== 'cancelled'" class="action-btn cancel" 
-            title="Annuler" (click)="cancelAppointment(apt.id)">
-          Annuler
+            title="{{ 'cancel' | translate }}" (click)="cancelAppointment(apt.id)">
+          {{ 'cancel' | translate }}
         </button>
         <button *ngIf="apt.status !== 'pending'" class="action-btn pending" 
-            title="Mettre en attente" (click)="markAppointmentAsPending(apt.id)">
-          Mettre en attente
+            title="{{ 'markPending' | translate }}" (click)="markAppointmentAsPending(apt.id)">
+          {{ 'markPending' | translate }}
         </button>
         <button *ngIf="apt.status !== 'confirmed'" class="action-btn confirm" 
-            title="Confirmer" (click)="confirmAppointment(apt.id)">
-          Confirmer
+            title="{{ 'confirm' | translate }}" (click)="confirmAppointment(apt.id)">
+          {{ 'confirm' | translate }}
         </button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- hi -->
+<!-- Formulaire de rendez-vous -->
 <div class="appointment-modal" *ngIf="showAppointmentForm">
   <div class="appointment-modal-content">
     <div class="appointment-modal-header">
-      <h3>{{ editingAppointmentId ? 'Modifier le rendez-vous' : 'Nouveau rendez-vous' }}</h3>
+      <h3>{{ editingAppointmentId ? ('editAppointment' | translate) : ('newAppointment' | translate) }}</h3>
       <button class="close-btn" (click)="closeAppointmentForm()">
         <i class='bx bx-x'></i>
       </button>
@@ -219,74 +221,74 @@
     <div class="appointment-modal-body">
       <form [formGroup]="appointmentForm" (ngSubmit)="saveAppointment()">
         <div class="form-group">
-          <label for="patientId">Patient</label>
+          <label for="patientId">{{ 'patient' | translate }}</label>
           <select id="patientId" formControlName="patientId" class="form-control">
-            <option value="">Sélectionner un patient</option>
+            <option value="">{{ 'selectPatient' | translate }}</option>
             <option *ngFor="let patient of patients" [value]="patient.id">
               {{ patient.prenom }} {{ patient.nom }}
             </option>
           </select>
           <div class="error-message" *ngIf="appointmentForm.get('patientId')?.invalid && appointmentForm.get('patientId')?.touched">
-            Veuillez sélectionner un patient.
+            {{ 'pleaseSelectPatient' | translate }}
           </div>
         </div>
         
         <div class="form-group">
-          <label for="title">Titre</label>
-          <input type="text" id="title" formControlName="title" class="form-control" placeholder="Ex: Consultation, Suivi...">
+          <label for="title">{{ 'title' | translate }}</label>
+          <input type="text" id="title" formControlName="title" class="form-control" placeholder="{{ 'appointmentTitlePlaceholder' | translate }}">
           <div class="error-message" *ngIf="appointmentForm.get('title')?.invalid && appointmentForm.get('title')?.touched">
-            Le titre est obligatoire.
+            {{ 'titleRequired' | translate }}
           </div>
         </div>
         
         <div class="form-row">
           <div class="form-group half">
-            <label for="date">Date</label>
+            <label for="date">{{ 'date' | translate }}</label>
             <input type="date" id="date" formControlName="date" class="form-control">
             <div class="error-message" *ngIf="appointmentForm.get('date')?.invalid && appointmentForm.get('date')?.touched">
-              La date est obligatoire.
+              {{ 'dateRequired' | translate }}
             </div>
           </div>
           
           <div class="form-group half">
-            <label for="status">Statut</label>
+            <label for="status">{{ 'status' | translate }}</label>
             <select id="status" formControlName="status" class="form-control">
-              <option value="confirmed">Confirmé</option>
-              <option value="pending">En attente</option>
+              <option value="confirmed">{{ 'confirmed' | translate }}</option>
+              <option value="pending">{{ 'pending' | translate }}</option>
             </select>
           </div>
         </div>
         
         <div class="form-row">
           <div class="form-group half">
-            <label for="startTime">Heure de début</label>
+            <label for="startTime">{{ 'startTime' | translate }}</label>
             <select id="startTime" formControlName="startTime" class="form-control">
               <option *ngFor="let hour of getAvailableHours()" [value]="hour">{{ hour }}</option>
             </select>
             <div class="error-message" *ngIf="appointmentForm.get('startTime')?.invalid && appointmentForm.get('startTime')?.touched">
-              L'heure de début est obligatoire.
+              {{ 'startTimeRequired' | translate }}
             </div>
           </div>
           
           <div class="form-group half">
-            <label for="endTime">Heure de fin</label>
+            <label for="endTime">{{ 'endTime' | translate }}</label>
             <select id="endTime" formControlName="endTime" class="form-control">
               <option *ngFor="let hour of getAvailableEndHours()" [value]="hour">{{ hour }}</option>
             </select>
             <div class="error-message" *ngIf="appointmentForm.get('endTime')?.invalid && appointmentForm.get('endTime')?.touched">
-              L'heure de fin est obligatoire.
+              {{ 'endTimeRequired' | translate }}
             </div>
           </div>
         </div>
         
         <div class="form-group">
-          <label for="description">Description</label>
-          <textarea id="description" formControlName="description" class="form-control" rows="3" placeholder="Informations supplémentaires..."></textarea>
+          <label for="description">{{ 'description' | translate }}</label>
+          <textarea id="description" formControlName="description" class="form-control" rows="3" placeholder="{{ 'additionalInfo' | translate }}"></textarea>
         </div>
         
         <div class="form-actions">
-          <button type="button" class="btn-cancel" (click)="closeAppointmentForm()">Annuler</button>
-          <button type="submit" class="btn-save" [disabled]="appointmentForm.invalid">Enregistrer</button>
+          <button type="button" class="btn-cancel" (click)="closeAppointmentForm()">{{ 'cancel' | translate }}</button>
+          <button type="submit" class="btn-save" [disabled]="appointmentForm.invalid">{{ 'save' | translate }}</button>
         </div>
       </form>
     </div>

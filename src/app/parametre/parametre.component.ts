@@ -5,6 +5,8 @@ import { ThemeService } from '../services/theme.service';
 import { LanguageService, Language } from '../services/language.service';
 import { AuthService } from '../services/auth.service';
 import { FirebaseService } from '../services/firebase.service';
+import { TranslatePipe } from '../pipes/translate.pipe';
+import { RouterModule } from '@angular/router';
 
 interface User {
   uid: string;
@@ -15,7 +17,7 @@ interface User {
   templateUrl: './parametre.component.html',
   styleUrls: ['./parametre.component.css'],
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, TranslatePipe, RouterModule],
   providers: [AuthService, FirebaseService]
 })
 export class ParametreComponent implements OnInit {
@@ -99,6 +101,25 @@ export class ParametreComponent implements OnInit {
         heureFermeture: '18:00',
         intervalleRdv: 30
       });
+    }
+  }
+  
+  changePassword() {
+    // Get current user email
+    const email = this.medecin?.email;
+    
+    if (email) {
+      // Send password reset email
+      this.authService.sendPasswordResetEmail(email)
+        .then(() => {
+          alert('Un email de réinitialisation du mot de passe a été envoyé à ' + email);
+        })
+        .catch((error: any) => {
+          console.error('Erreur lors de l\'envoi de l\'email de réinitialisation:', error);
+          alert('Erreur lors de l\'envoi de l\'email de réinitialisation. Veuillez réessayer.');
+        });
+    } else {
+      alert('Aucune adresse email trouvée. Veuillez vous reconnecter et réessayer.');
     }
   }
 } 

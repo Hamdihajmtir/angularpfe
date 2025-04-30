@@ -1,9 +1,9 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
-import { faHeartPulse } from '@fortawesome/free-solid-svg-icons';
+import { faHeartPulse, faArrowLeft } from '@fortawesome/free-solid-svg-icons';
 import { FirebaseService } from '../services/firebase.service';
 
 @Component({
@@ -11,13 +11,14 @@ import { FirebaseService } from '../services/firebase.service';
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css'],
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FontAwesomeModule]
+  imports: [CommonModule, ReactiveFormsModule, FontAwesomeModule, RouterModule]
 })
 export class LoginComponent {
   loginForm: FormGroup;
   errorMessage: string = '';
   isLoading: boolean = false;
   faHeartPulse = faHeartPulse;
+  faArrowLeft = faArrowLeft;
 
   constructor(
     private fb: FormBuilder,
@@ -56,5 +57,13 @@ export class LoginComponent {
 
   goToSignup() {
     this.router.navigate(['/signup']);
+  }
+
+  goToForgotPassword() {
+    this.router.navigate(['/forgot-password']);
+  }
+
+  goToChooseLogin() {
+    this.router.navigate(['/choisi-le-login']);
   }
 } 

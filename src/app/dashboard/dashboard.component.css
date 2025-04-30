@@ -1999,3 +1999,53 @@ body.dark .other-month {
 body.dark .has-event::after {
   background-color: #4FCBEB;
 }
+
+.search-container {
+  margin: 0 0 20px 0;
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+
+  .search-box {
+    position: relative;
+    width: 100%;
+    max-width: 320px;
+
+    input {
+      width: 100%;
+      padding: 12px 16px 12px 44px;
+      border: none;
+      border-radius: 24px;
+      background: #f4f8fb;
+      color: #1E5F74;
+      font-size: 15px;
+      font-weight: 500;
+      box-shadow: 0 2px 8px rgba(30, 95, 116, 0.07);
+      transition: box-shadow 0.2s, background 0.2s;
+      outline: none;
+
+      &::placeholder {
+        color: #b0b8c1;
+        font-weight: 400;
+        letter-spacing: 0.2px;
+      }
+
+      &:focus {
+        background: #fff;
+        box-shadow: 0 4px 16px rgba(30, 95, 116, 0.13);
+      }
+    }
+
+    i {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #2A9D8F;
+      font-size: 20px;
+      pointer-events: none;
+      opacity: 0.8;
+      transition: color 0.2s;
+    }
+  }
+}

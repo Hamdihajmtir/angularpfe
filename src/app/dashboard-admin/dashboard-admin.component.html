@@ -1,0 +1,129 @@
+<div class="dashboard-container">
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <fa-icon [icon]="faUserShield" class="admin-icon"></fa-icon>
+      <h2 style="color: #fff;">CardioTrack Admin</h2>
+    </div>
+    
+    <div class="sidebar-menu">
+      <div class="menu-item" [class.active]="!router.url.includes('generate-secretaire') && !router.url.includes('parametre') && !router.url.includes('ajouter-medecin')" routerLink="/dashboard-admin">
+        <fa-icon [icon]="faUserMd"></fa-icon>
+        <span>Médecins</span>
+      </div>
+      <div class="menu-item" [class.active]="router.url.includes('ajouter-medecin')" routerLink="/dashboard-admin/ajouter-medecin">
+        <fa-icon [icon]="faUserPlus"></fa-icon>
+        <span>Ajouter médecin</span>
+      </div>
+      <div class="menu-item" [class.active]="router.url.includes('generate-secretaire')" routerLink="/dashboard-admin/generate-secretaire">
+        <fa-icon [icon]="faUserPlus"></fa-icon>
+        <span>Ajouter infirmière</span>
+      </div>
+      <div class="menu-item" [class.active]="router.url.includes('parametre')" routerLink="/dashboard-admin/parametre">
+        <fa-icon [icon]="faCog"></fa-icon>
+        <span>Paramètres</span>
+      </div>
+
+    </div>
+
+    <div class="sidebar-footer">
+      <button class="logout-btn" (click)="logout()">
+        <fa-icon [icon]="faSignOutAlt"></fa-icon>
+        <span>Déconnexion</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <div class="content-header">
+      <h1>Tableau de bord Administrateur</h1>
+      <div class="stats-container">
+        <div class="stat-card">
+          <fa-icon [icon]="faUserMd"></fa-icon>
+          <div class="stat-info">
+            <h3>{{ getDoctors().length }}</h3>
+            <p>Médecins</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Doctors List - Only show when not on generate-secretaire, parametre or ajouter-medecin route -->
+    <div class="doctors-container" *ngIf="!router.url.includes('generate-secretaire') && !router.url.includes('parametre') && !router.url.includes('ajouter-medecin')">
+      <div *ngIf="loading" class="loading-spinner">
+        Chargement des données...
+      </div>
+      
+      <div *ngIf="error" class="error-message">
+        {{ error }}
+      </div>
+
+      <div *ngIf="!loading && !error" class="doctors-grid">
+        <div *ngFor="let doctor of getDoctors()" class="doctor-card">
+          <div class="doctor-header">
+            <fa-icon [icon]="faUserMd" class="doctor-icon"></fa-icon>
+            <h3>Dr. {{ doctor.prenom }} {{ doctor.nom }}</h3>
+            <div class="doctor-actions">
+              <button class="edit-btn" (click)="editDoctor(doctor)">
+                <fa-icon [icon]="faEdit"></fa-icon>
+              </button>
+              <button class="delete-btn" (click)="deleteDoctor(doctor.uid)">
+                <fa-icon [icon]="faTrash"></fa-icon>
+              </button>
+            </div>
+          </div>
+          
+          <div class="doctor-info">
+            <p><strong>Email:</strong> {{ doctor.email }}</p>
+            <p *ngIf="doctor.tel"><strong>Téléphone:</strong> {{ doctor.tel }}</p>
+            <p><strong>Patients:</strong> {{ getPatientCount(doctor) }}</p>
+          </div>
+
+          <div class="doctor-patients">
+            <h4>Liste des Patients</h4>
+            <div class="patient-actions-header">
+              <!-- <button class="add-patient-btn" (click)="addPatient(doctor.uid)">
+                <fa-icon [icon]="faPlus"></fa-icon>
+                <span>Ajouter un patient</span>
+              </button> -->
+            </div>
+            <div *ngIf="getPatients(doctor).length > 0" class="patients-list">
+              <div *ngFor="let patient of getPatients(doctor)" class="patient-item">
+                <div class="patient-header">
+                  <p class="patient-name">{{ patient.prenom }} {{ patient.nom }}</p>
+                  <span class="patient-info">{{ patient.age }} ans • {{ patient.genre }}</span>
+                  <div class="patient-actions">
+                    <button class="edit-btn" (click)="editPatient(doctor.uid, patient)">
+                      <fa-icon [icon]="faEdit"></fa-icon>
+                    </button>
+                    <button class="delete-btn" (click)="deletePatient(doctor.uid, patient.id)">
+                      <fa-icon [icon]="faTrash"></fa-icon>
+                    </button>
+                  </div>
+                </div>
+                <div class="patient-details">
+                  <p>
+                    <fa-icon [icon]="faIdCard"></fa-icon>
+                    CIN: {{ patient.cin }}
+                  </p>
+                  <p>
+                    <fa-icon [icon]="faCode"></fa-icon>
+                    Code: {{ patient.code }}
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div *ngIf="getPatients(doctor).length === 0" class="no-patients">
+              Aucun patient enregistré
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Router outlet for other components -->
+    <router-outlet></router-outlet>
+  </div>
+
+ 

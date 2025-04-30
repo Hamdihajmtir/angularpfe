@@ -1,0 +1,115 @@
+<div class="appointments-container">
+  <div class="page-header">
+    <h1>Liste des rendez-vous</h1>
+    <p>Gérez et consultez tous les rendez-vous de vos patients</p>
+  </div>
+
+  <!-- Filtres -->
+  <div class="filters-section">
+    <form [formGroup]="filterForm" class="filters-form">
+      <div class="search-box">
+        <fa-icon [icon]="faSearch"></fa-icon>
+        <input 
+          type="text" 
+          formControlName="search" 
+          placeholder="Rechercher par nom, prénom ou CIN..."
+        >
+      </div>
+
+      <div class="date-filters">
+        <div class="date-input">
+          <fa-icon [icon]="faCalendar"></fa-icon>
+          <input 
+            type="date" 
+            formControlName="startDate" 
+            placeholder="Date de début"
+          >
+        </div>
+        <div class="date-input">
+          <fa-icon [icon]="faCalendar"></fa-icon>
+          <input 
+            type="date" 
+            formControlName="endDate" 
+            placeholder="Date de fin"
+          >
+        </div>
+      </div>
+
+      <div class="status-filter">
+        <select formControlName="status">
+          <option value="">Tous les statuts</option>
+          <option value="confirmed">Confirmé</option>
+          <option value="pending">En attente</option>
+          <option value="cancelled">Annulé</option>
+        </select>
+      </div>
+
+      <button type="button" class="reset-btn" (click)="resetFilters()">
+        Réinitialiser les filtres
+      </button>
+    </form>
+  </div>
+
+  <!-- Message d'erreur -->
+  <div class="error-message" *ngIf="error">
+    {{ error }}
+  </div>
+
+  <!-- Indicateur de chargement -->
+  <div class="loading-spinner" *ngIf="isLoading">
+    <div class="spinner"></div>
+    <p>Chargement des rendez-vous...</p>
+  </div>
+
+  <!-- Liste des rendez-vous -->
+  <div class="appointments-grid" *ngIf="!isLoading && !error">
+    <div class="appointment-card" *ngFor="let appointment of filteredAppointments">
+      <div class="appointment-header">
+        <h3>{{ appointment.title }}</h3>
+        <span class="status-badge" [ngClass]="getStatusClass(appointment.status)">
+          {{ getStatusText(appointment.status) }}
+        </span>
+      </div>
+
+      <div class="appointment-datetime">
+        <fa-icon [icon]="faCalendar"></fa-icon>
+        <span>{{ formatDate(appointment.date) }}</span>
+      </div>
+
+      <div class="patient-info" *ngIf="appointment.patient">
+        <div class="patient-name">
+          <fa-icon [icon]="faUser"></fa-icon>
+          <span>{{ appointment.patient.prenom }} {{ appointment.patient.nom }}</span>
+        </div>
+        <div class="patient-cin">
+          <fa-icon [icon]="faIdCard"></fa-icon>
+          <span>{{ appointment.patient.cin }}</span>
+        </div>
+        <div class="patient-phone">
+          <fa-icon [icon]="faPhone"></fa-icon>
+          <span>{{ appointment.patient.phone }}</span>
+        </div>
+      </div>
+
+      <div class="appointment-description" *ngIf="appointment.description">
+        <p>{{ appointment.description }}</p>
+      </div>
+
+      <div class="appointment-actions">
+        <button class="edit-btn" (click)="editAppointment(appointment)">
+          <fa-icon [icon]="faEdit"></fa-icon>
+          Modifier
+        </button>
+        <button class="delete-btn" (click)="deleteAppointment(appointment.id)">
+          <fa-icon [icon]="faTrash"></fa-icon>
+          Supprimer
+        </button>
+      </div>
+    </div>
+
+    <!-- Message si aucun rendez-vous -->
+    <div class="no-appointments" *ngIf="filteredAppointments.length === 0">
+      <p>Aucun rendez-vous ne correspond à vos critères de recherche.</p>
+    </div>
+  </div>
+</div>

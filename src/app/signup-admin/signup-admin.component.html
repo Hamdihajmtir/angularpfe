@@ -1,0 +1,130 @@
+<div class="signup-container" style="background:linear-gradient(180deg, #1E5F74 0%, #1e7474 100%);">
+  <div class="signup-card">
+    <div class="signup-header">
+      <fa-icon [icon]="faUserShield" style="font-size: 80px; color: #1E5F74;"></fa-icon>
+      <h1 style="color: #1E5F74;">CardioTrack Admin</h1>
+      <p>Inscription Administrateur</p>
+    </div>
+    
+    <form [formGroup]="signupForm" (ngSubmit)="onSubmit()">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="firstName">Prénom</label>
+          <input 
+            type="text" 
+            id="firstName" 
+            formControlName="firstName" 
+            placeholder="Entrez votre prénom"
+            [class.is-invalid]="signupForm.get('firstName')?.invalid && signupForm.get('firstName')?.touched"
+          >
+          <div class="error-message" *ngIf="signupForm.get('firstName')?.invalid && signupForm.get('firstName')?.touched">
+            <small *ngIf="signupForm.get('firstName')?.errors?.['required']">Prénom requis</small>
+            <small *ngIf="signupForm.get('firstName')?.errors?.['invalidName']">
+              {{ signupForm.get('firstName')?.errors?.['message'] }}
+            </small>
+          </div>
+        </div><br>
+        
+        <div class="form-group">
+          <label for="lastName">Nom</label>
+          <input 
+            type="text" 
+            id="lastName" 
+            formControlName="lastName" 
+            placeholder="Entrez votre nom"
+            [class.is-invalid]="signupForm.get('lastName')?.invalid && signupForm.get('lastName')?.touched"
+          >
+          <div class="error-message" *ngIf="signupForm.get('lastName')?.invalid && signupForm.get('lastName')?.touched">
+            <small *ngIf="signupForm.get('lastName')?.errors?.['required']">Nom requis</small>
+            <small *ngIf="signupForm.get('lastName')?.errors?.['invalidName']">
+              {{ signupForm.get('lastName')?.errors?.['message'] }}
+            </small>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="email">Email Administrateur</label>
+        <input 
+          type="email" 
+          id="email" 
+          formControlName="email" 
+          placeholder="Entrez votre email administrateur"
+          [class.is-invalid]="signupForm.get('email')?.invalid && signupForm.get('email')?.touched"
+        >
+        <div class="error-message" *ngIf="signupForm.get('email')?.invalid && signupForm.get('email')?.touched">
+          <small *ngIf="signupForm.get('email')?.errors?.['required']">Email requis</small>
+          <small *ngIf="signupForm.get('email')?.errors?.['email']">Format d'email invalide</small>
+          <small *ngIf="signupForm.get('email')?.errors?.['invalidEmail']">
+            {{ signupForm.get('email')?.errors?.['message'] }}
+          </small>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="phone">Téléphone</label>
+        <input 
+          type="tel" 
+          id="phone" 
+          formControlName="phone" 
+          placeholder="Entrez votre numéro de téléphone"
+          [class.is-invalid]="signupForm.get('phone')?.invalid && signupForm.get('phone')?.touched"
+        >
+        <div class="error-message" *ngIf="signupForm.get('phone')?.invalid && signupForm.get('phone')?.touched">
+          <small *ngIf="signupForm.get('phone')?.errors?.['required']">Numéro de téléphone requis</small>
+          <small *ngIf="signupForm.get('phone')?.errors?.['invalidPhone']">
+            {{ signupForm.get('phone')?.errors?.['message'] }}
+          </small>
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label for="password">Mot de passe</label>
+        <input 
+          type="password" 
+          id="password" 
+          formControlName="password" 
+          placeholder="Créez votre mot de passe"
+          [class.is-invalid]="signupForm.get('password')?.invalid && signupForm.get('password')?.touched"
+        >
+        <div class="error-message" *ngIf="signupForm.get('password')?.invalid && signupForm.get('password')?.touched">
+          <small *ngIf="signupForm.get('password')?.errors?.['required']">Mot de passe requis</small>
+          <small *ngIf="signupForm.get('password')?.errors?.['minlength']">Le mot de passe doit contenir au moins 8 caractères</small>
+          <small *ngIf="signupForm.get('password')?.errors?.['invalidPassword']">
+            {{ signupForm.get('password')?.errors?.['message'] }}
+          </small>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="confirmPassword">Confirmer le mot de passe</label>
+        <input 
+          type="password" 
+          id="confirmPassword" 
+          formControlName="confirmPassword" 
+          placeholder="Confirmez votre mot de passe"
+          [class.is-invalid]="signupForm.get('confirmPassword')?.invalid && signupForm.get('confirmPassword')?.touched"
+        >
+        <div class="error-message" *ngIf="signupForm.get('confirmPassword')?.invalid && signupForm.get('confirmPassword')?.touched">
+          <small *ngIf="signupForm.get('confirmPassword')?.errors?.['required']">Confirmation du mot de passe requise</small>
+        </div>
+        <div class="error-message" *ngIf="signupForm.errors?.['mismatch']">
+          <small>Les mots de passe ne correspondent pas</small>
+        </div>
+      </div>
+      
+      <div class="error-message" *ngIf="errorMessage">
+        {{ errorMessage }}
+      </div>
+      
+      <button type="submit" class="signup-button" [disabled]="signupForm.invalid || isLoading">
+        <span *ngIf="!isLoading">S'inscrire</span>
+        <span *ngIf="isLoading">Chargement...</span>
+      </button>
+      
+      <div class="login-prompt">
+        Déjà un compte? <button type="button" class="login-link" (click)="goToLogin()">Se connecter</button>
+      </div>
+    </form>
+  </div>
+</div>

@@ -1,4 +1,8 @@
 <div class="login-container" style="background:linear-gradient(180deg, #1E5F74 0%, #1e7474 100%);">
+  <button class="back-button" (click)="goToChooseLogin()">
+    <fa-icon [icon]="faArrowLeft"></fa-icon>
+  </button>
+  
   <div class="login-card">
     <div class="login-header">
       <fa-icon [icon]="faHeartPulse" style="font-size: 80px; color: #1E5F74;"></fa-icon>
@@ -41,7 +45,7 @@
           <input type="checkbox" id="remember">
           <label for="remember">Se souvenir de moi</label>
         </div>
-        <a href="#" class="forgot-password">Mot de passe oublié?</a>
+        <button type="button" class="forgot-password-link" (click)="goToForgotPassword()">Mot de passe oublié?</button>
       </div>
       
       <div class="error-message" *ngIf="errorMessage">
@@ -53,9 +57,9 @@
         <span *ngIf="isLoading">Chargement...</span>
       </button>
       
-      <div class="signup-prompt">
+      <!-- <div class="signup-prompt">
         Pas encore de compte? <button type="button" class="signup-link" (click)="goToSignup()">S'inscrire</button>
-      </div>
+      </div> -->
     </form>
   </div>
 </div> 

@@ -1,13 +1,16 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FirebaseService } from '../services/firebase.service';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ReactiveFormsModule } from '@angular/forms';
 import { Chart, registerables } from 'chart.js';
+import zoomPlugin from 'chartjs-plugin-zoom';
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
 import { ThemeService } from '../services/theme.service';
+import { TranslatePipe } from '../pipes/translate.pipe';
+import { NotificationService } from '../services/notification.service';
 
 interface Patient {
   id: number;
@@ -21,15 +24,15 @@ interface Patient {
   genre: string;
 }
 
-// Enregistrer les modules Chart.js
-Chart.register(...registerables);
+// Enregistrer les modules Chart.js et le plugin zoom
+Chart.register(...registerables, zoomPlugin);
 
 @Component({
   selector: 'app-patient-detail',
   templateUrl: './patient-detail.component.html',
   styleUrls: ['./patient-detail.component.css'],
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule]
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, TranslatePipe]
 })
 export class PatientDetailComponent implements OnInit, OnDestroy {
   patient: any = null;
@@ -68,12 +71,24 @@ export class PatientDetailComponent implements OnInit, OnDestroy {
     }
   ];
 
+  isFullscreenChart: boolean = false;
+  fullscreenChart: Chart | null = null;
+
+  private chartZoomLevel = 1;
+  private readonly ZOOM_FACTOR = 1.2;
+  private isDragging = false;
+  private lastMouseX = 0;
+  private lastMouseY = 0;
+  private chartTranslateX = 0;
+  private chartTranslateY = 0;
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private firebaseService: FirebaseService,
     private formBuilder: FormBuilder,
-    private themeService: ThemeService
+    private themeService: ThemeService,
+    private notificationService: NotificationService
   ) {
     this.themeService.darkMode$.subscribe(isDark => {
       this.isDarkMode = isDark;
@@ -99,11 +114,7 @@ export class PatientDetailComponent implements OnInit, OnDestroy {
       }
     });
     this.initMedicalReportForm();
-    
-    // Initialiser les graphiques après le chargement des données
-    setTimeout(() => {
-      this.initCharts();
-    }, 500);
+    this.initializeChart();
   }
 
   ngOnDestroy(): void {
@@ -111,11 +122,13 @@ export class PatientDetailComponent implements OnInit, OnDestroy {
     if (this.measurementUnsubscribe) {
       this.measurementUnsubscribe();
     }
+    if (this.fullscreenChart) {
+      this.fullscreenChart.destroy();
+    }
   }
 
   async loadPatientDetails(patientId: string) {
     try {
-      // Récupérer les détails du patient depuis Firebase
       if (this.currentUser && this.currentUser.uid) {
         const patientRef = await this.firebaseService.getPatientById(this.currentUser.uid, patientId);
         
@@ -136,8 +149,9 @@ export class PatientDetailComponent implements OnInit, OnDestroy {
               : 'Non modifié'
           };
           
-          // Remplacer l'appel ponctuel par l'observation continue
+          // Initialiser les graphiques et charger les mesures
           if (this.patient.braceletCode) {
+            await this.loadAllMeasurements(this.patient.braceletCode);
             this.observePatientMeasurements(this.patient.braceletCode);
           }
         } else {
@@ -178,13 +192,11 @@ export class PatientDetailComponent implements OnInit, OnDestroy {
     if (!this.medicalReportForm.valid) return;
     
     const reportContent = this.medicalReportForm.get('reportContent')?.value;
-    
     // Si le champ est vide, ne rien faire
     if (!reportContent || reportContent.trim() === '') {
       alert('Le rapport ne peut pas être vide');
       return;
     }
-    
     // Si un ID de rapport existe, mettre à jour ce rapport
     if (this.currentReportId) {
       this.updateMedicalReport();
@@ -667,24 +679,44 @@ export class PatientDetailComponent implements OnInit, OnDestroy {
 
   // Nouvelle méthode pour observer les mesures vitales en temps réel
   observePatientMeasurements(braceletCode: string) {
-    // Nettoyer l'écouteur existant s'il y en a un
     if (this.measurementUnsubscribe) {
       this.measurementUnsubscribe();
     }
     
-    // Configurer le nouvel écouteur
     this.measurementUnsubscribe = this.firebaseService.observeMeasurementsByBraceletCode(
       braceletCode,
-      (response) => {
-        if (response.success && response.measures) {
+      (measures) => {
+        if (measures && measures.BPM !== undefined && measures.SpO2 !== undefined) {
           this.hasMeasurements = true;
+          this.heartRate = measures.BPM || 0;
+          this.oxygenLevel = measures.SpO2 || 0;
           
-          // Récupérer les valeurs de BPM et SpO2
-          this.heartRate = response.measures.BPM || 0;
-          this.oxygenLevel = response.measures.SpO2 || 0;
+          // Créer le timestamp au format Firebase
+          const now = new Date();
+          const timestamp = now.toISOString()
+            .replace(/[:.]/g, '_')
+            .replace('T', '_')
+            .replace('Z', '');
           
-          // Mettre à jour les graphiques avec ces valeurs
-          this.updateLatestChartValues(this.heartRate, this.oxygenLevel);
+          if (this.charts['proVital']) {
+            const chart = this.charts['proVital'];
+            
+            if (chart.data && chart.data.labels && chart.data.datasets) {
+              // Ajouter les nouvelles valeurs
+              chart.data.labels.push(timestamp);
+              chart.data.datasets[0].data.push(measures.BPM);
+              chart.data.datasets[1].data.push(measures.SpO2);
+              chart.data.datasets[2].data.push(measures.temperature);
+              
+              // Garder les 50 dernières mesures
+              if (chart.data.labels.length > 50) {
+                chart.data.labels.shift();
+                chart.data.datasets.forEach(dataset => dataset.data.shift());
+              }
+              
+              chart.update('none');
+            }
+          }
         } else {
           this.hasMeasurements = false;
           this.heartRate = 0;
@@ -694,19 +726,402 @@ export class PatientDetailComponent implements OnInit, OnDestroy {
     );
   }
   
-  // Méthode pour mettre à jour les dernières valeurs dans les graphiques
-  updateLatestChartValues(heartRate: number, oxygenLevel: number) {
-    if (this.charts['heartRate'] && this.charts['oxygen']) {
-      // Ajouter la nouvelle valeur à la fin des données existantes
-      const heartRateData = this.charts['heartRate'].data.datasets[0].data;
-      heartRateData[heartRateData.length - 1] = heartRate;
-      
-      const oxygenData = this.charts['oxygen'].data.datasets[0].data;
-      oxygenData[oxygenData.length - 1] = oxygenLevel;
-      
-      // Mettre à jour les graphiques
-      this.charts['heartRate'].update();
-      this.charts['oxygen'].update();
+  async loadAllMeasurements(braceletCode: string) {
+    const response = await this.firebaseService.getMeasurementsByBraceletCode(braceletCode);
+    if (!response.success || !response.measures) return;
+
+    // Convertir l'objet de mesures en tableau trié par timestamp
+    const entries = Object.entries(response.measures)
+      .map(([timestamp, values]: [string, any]) => ({
+        // Garder le format original du timestamp de Firebase
+        timestamp: timestamp,
+        BPM: values.BPM ?? null,
+        SpO2: values.SpO2 ?? null,
+        temperature: values.temperature ?? null
+      }))
+      .sort((a, b) => {
+        // Convertir les timestamps pour le tri (remplacer les underscores par des :)
+        const dateA = new Date(a.timestamp.replace(/_/g, ':'));
+        const dateB = new Date(b.timestamp.replace(/_/g, ':'));
+        return dateA.getTime() - dateB.getTime();
+      });
+
+    // Préparer les labels en gardant le format original
+    const labels = entries.map(e => e.timestamp);
+    const bpmData = entries.map(e => e.BPM);
+    const spo2Data = entries.map(e => e.SpO2);
+    const tempData = entries.map(e => e.temperature);
+
+    this.updateProChart(labels, bpmData, spo2Data, tempData);
+  }
+
+  updateProChart(labels: string[], bpmData: number[], spo2Data: number[], tempData: number[]) {
+    const ctx = document.getElementById('proVitalChart') as HTMLCanvasElement;
+    if (!ctx) return;
+
+    if (this.charts['proVital']) {
+        this.charts['proVital'].destroy();
     }
+
+    this.charts['proVital'] = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels,
+            datasets: [
+                {
+                    label: 'BPM',
+                    data: bpmData,
+                    borderColor: 'rgba(231, 76, 60, 1)',
+                    backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                    yAxisID: 'y',
+                    tension: 0.3,
+                    pointRadius: 3,
+                    borderWidth: 2
+                },
+                {
+                    label: 'SpO2 (%)',
+                    data: spo2Data,
+                    borderColor: 'rgba(52, 152, 219, 1)',
+                    backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                    yAxisID: 'y1',
+                    tension: 0.3,
+                    pointRadius: 3,
+                    borderWidth: 2
+                },
+                {
+                    label: 'Température (°C)',
+                    data: tempData,
+                    borderColor: 'rgba(243, 156, 18, 1)',
+                    backgroundColor: 'rgba(243, 156, 18, 0.1)',
+                    yAxisID: 'y2',
+                    tension: 0.3,
+                    pointRadius: 3,
+                    borderWidth: 2
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            animation: { duration: 750, easing: 'linear' },
+            plugins: {
+                legend: { position: 'top' },
+                title: { display: true, text: 'Courbes Vitales en Temps Réel' },
+                zoom: {
+                    pan: {
+                        enabled: true,
+                        mode: 'xy',
+                        modifierKey: undefined,
+                        threshold: 5
+                    },
+                    zoom: {
+                        wheel: {
+                            enabled: true,
+                            speed: 0.1
+                        },
+                        pinch: {
+                            enabled: true
+                        },
+                        mode: 'xy'
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    title: { display: true, text: 'Date et Heure' },
+                    ticks: {
+                        maxRotation: 45,
+                        callback: function(value: any) {
+                            // Convertir le format Firebase en format lisible
+                            const timestamp = this.getLabelForValue(value);
+                            if (timestamp) {
+                                const date = new Date(timestamp.replace(/_/g, ':'));
+                                return date.toLocaleString('fr-FR', {
+                                    hour: '2-digit',
+                                    minute: '2-digit',
+                                    second: '2-digit',
+                                    year: '2-digit',
+                                    month: '2-digit',
+                                    day: '2-digit'
+                                });
+                            }
+                            return '';
+                        }
+                    },
+                    grid: {
+                        display: true,
+                        color: 'rgba(0,0,0,0.1)'
+                    }
+                },
+                y: {
+                    type: 'linear',
+                    display: true,
+                    position: 'left',
+                    title: { display: true, text: 'BPM' },
+                    min: 0,
+                    max: 200,
+                    grid: {
+                        color: 'rgba(231, 76, 60, 0.1)'
+                    }
+                },
+                y1: {
+                    type: 'linear',
+                    display: true,
+                    position: 'right',
+                    title: { display: true, text: 'SpO2 (%)' },
+                    min: 0,
+                    max: 100,
+                    grid: {
+                        color: 'rgba(52, 152, 219, 0.1)',
+                        drawOnChartArea: false
+                    }
+                },
+                y2: {
+                    type: 'linear',
+                    display: true,
+                    position: 'right',
+                    title: { display: true, text: 'Température (°C)' },
+                    min: 0,
+                    max: 45,
+                    grid: {
+                        color: 'rgba(243, 156, 18, 0.1)',
+                        drawOnChartArea: false
+                    },
+                    offset: true
+                }
+            }
+        }
+    });
+  }
+
+  private saveChartState() {
+    if (this.fullscreenChart) {
+      const chartState = {
+        zoom: this.fullscreenChart.getZoomLevel ? this.fullscreenChart.getZoomLevel() : 1,
+        pan: this.fullscreenChart.pan ? this.fullscreenChart.pan : { x: 0, y: 0 },
+        timestamp: new Date().getTime()
+      };
+      localStorage.setItem('chartState', JSON.stringify(chartState));
+    }
+  }
+
+  private loadChartState(): any {
+    const savedState = localStorage.getItem('chartState');
+    if (savedState) {
+      try {
+        const state = JSON.parse(savedState);
+        // Vérifier si l'état sauvegardé n'est pas trop ancien (24 heures)
+        if (new Date().getTime() - state.timestamp < 24 * 60 * 60 * 1000) {
+          return state;
+        } else {
+          localStorage.removeItem('chartState');
+        }
+      } catch (e) {
+        console.error('Erreur lors du chargement de l\'état du graphique:', e);
+        localStorage.removeItem('chartState');
+      }
+    }
+    return null;
+  }
+
+  openFullscreenChart() {
+    this.isFullscreenChart = true;
+    
+    setTimeout(() => {
+      const ctx = document.getElementById('fullscreenChart') as HTMLCanvasElement;
+      if (!ctx) {
+        console.error('Canvas element not found');
+        return;
+      }
+
+      // Récupérer le graphique source
+      const currentChart = this.charts['proVital'];
+      if (!currentChart || !currentChart.data) {
+        console.error('Source chart not found or has no data');
+        return;
+      }
+
+      // Détruire l'ancien graphique en plein écran s'il existe
+      if (this.fullscreenChart) {
+        this.fullscreenChart.destroy();
+      }
+
+      // S'assurer que le canvas a la bonne taille
+      const container = ctx.parentElement;
+      if (container) {
+        ctx.width = container.clientWidth;
+        ctx.height = container.clientHeight;
+      }
+
+      // Charger l'état sauvegardé
+      const savedState = this.loadChartState();
+
+      // Créer le nouveau graphique avec les options de pan et zoom
+      this.fullscreenChart = new Chart(ctx, {
+        type: 'line',
+        data: JSON.parse(JSON.stringify(currentChart.data)),
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          animation: { duration: 0 },
+          plugins: {
+            zoom: {
+              pan: {
+                enabled: true,
+                mode: 'xy',
+                modifierKey: undefined,
+                threshold: 5
+              },
+              zoom: {
+                wheel: {
+                  enabled: true,
+                  speed: 0.1
+                },
+                pinch: {
+                  enabled: true
+                },
+                mode: 'xy'
+              }
+            }
+          }
+        }
+      });
+
+      // Restaurer l'état sauvegardé si disponible
+      if (savedState) {
+        this.fullscreenChart.zoom(savedState.zoom);
+        this.fullscreenChart.pan(savedState.pan);
+      }
+
+      // Ajouter des écouteurs d'événements pour sauvegarder l'état
+      if (this.fullscreenChart?.options?.plugins?.zoom) {
+        const zoomPlugin = this.fullscreenChart.options.plugins.zoom;
+        
+        if (zoomPlugin.zoom) {
+          zoomPlugin.zoom.onZoomComplete = () => {
+            this.saveChartState();
+          };
+        }
+
+        if (zoomPlugin.pan) {
+          zoomPlugin.pan.onPanComplete = () => {
+            this.saveChartState();
+          };
+        }
+      }
+
+      // Ajouter des écouteurs d'événements pour le curseur
+      let isDragging = false;
+
+      ctx.addEventListener('mousedown', () => {
+        isDragging = true;
+        ctx.style.cursor = 'grabbing';
+      });
+
+      ctx.addEventListener('mousemove', () => {
+        if (!isDragging) {
+          ctx.style.cursor = 'grab';
+        }
+      });
+
+      ctx.addEventListener('mouseup', () => {
+        isDragging = false;
+        ctx.style.cursor = 'grab';
+        this.saveChartState();
+      });
+
+      ctx.addEventListener('mouseleave', () => {
+        isDragging = false;
+        ctx.style.cursor = 'default';
+      });
+
+      // Forcer une mise à jour du graphique
+      this.fullscreenChart.update('none');
+    }, 100);
+  }
+
+  closeFullscreenChart() {
+    if (this.fullscreenChart) {
+      this.saveChartState();
+      this.fullscreenChart.destroy();
+      this.fullscreenChart = null;
+    }
+    this.isFullscreenChart = false;
+  }
+
+  private initializeChart(): void {
+    const chartContainer = document.querySelector('.chart-container') as HTMLElement;
+    if (chartContainer) {
+      chartContainer.addEventListener('mousedown', ((event: MouseEvent) => {
+        this.startDragging(event);
+      }) as EventListener);
+      chartContainer.addEventListener('mousemove', ((event: MouseEvent) => {
+        this.handleDrag(event);
+      }) as EventListener);
+      chartContainer.addEventListener('mouseup', (() => this.stopDragging()) as EventListener);
+      chartContainer.addEventListener('mouseleave', (() => this.stopDragging()) as EventListener);
+    }
+  }
+
+  private startDragging(event: MouseEvent): void {
+    this.isDragging = true;
+    this.lastMouseX = event.clientX;
+    this.lastMouseY = event.clientY;
+  }
+
+  private handleDrag(event: MouseEvent): void {
+    if (!this.isDragging) return;
+
+    const deltaX = event.clientX - this.lastMouseX;
+    const deltaY = event.clientY - this.lastMouseY;
+
+    this.chartTranslateX += deltaX;
+    this.chartTranslateY += deltaY;
+
+    this.updateChartTransform();
+
+    this.lastMouseX = event.clientX;
+    this.lastMouseY = event.clientY;
+  }
+
+  private stopDragging(): void {
+    this.isDragging = false;
+  }
+
+  private updateChartTransform(): void {
+    const chartElement = document.querySelector('.chart-container svg') as HTMLElement;
+    if (chartElement) {
+      chartElement.style.transform = `translate(${this.chartTranslateX}px, ${this.chartTranslateY}px) scale(${this.chartZoomLevel})`;
+    }
+  }
+
+  zoomIn(): void {
+    this.chartZoomLevel *= this.ZOOM_FACTOR;
+    this.updateChartTransform();
+  }
+
+  zoomOut(): void {
+    this.chartZoomLevel /= this.ZOOM_FACTOR;
+    this.updateChartTransform();
+  }
+
+  resetZoom(): void {
+    this.chartZoomLevel = 1;
+    this.chartTranslateX = 0;
+    this.chartTranslateY = 0;
+    this.updateChartTransform();
+  }
+
+  zoomInFullscreen(): void {
+    this.zoomIn();
+  }
+
+  zoomOutFullscreen(): void {
+    this.zoomOut();
+  }
+
+  resetZoomFullscreen(): void {
+    this.resetZoom();
   }
 } 

@@ -21,25 +21,33 @@
 		<li routerLinkActive="active">
 			<a routerLink="/dashboard">
 				<i class='bx bxs-dashboard'></i>
-				<span>Dashboard</span>
+				<span>{{ 'dashboard' | translate }}</span>
 			</a>
 		</li>
 		<li routerLinkActive="active">
 			<a routerLink="/calendrier">
 				<i class='bx bx-calendar'></i>
-				<span>Calendrier</span>
+				<span>{{ 'calendar' | translate }}</span>
 			</a>
 		</li>
 		<li routerLinkActive="active">
 			<a routerLink="/parametre">
 				<i class='bx bx-cog'></i>
-				<span>Paramètres</span>
+				<span>{{ 'settings' | translate }}</span>
 			</a>
 		</li>
+
+		<li routerLinkActive="active">
+			<a routerLink="/liste-des-rendez-vous">
+				<i class='bx bx-calendar'></i>
+				<span>{{ 'liste des rendez-vous' | translate }}</span>
+			</a>
+		</li>
+
 		<li>
 			<a href="#" class="logout" (click)="logout($event)">
 				<i class='bx bx-log-out'></i>
-				<span>Logout</span>
+				<span>{{ 'logout' | translate }}</span>
 			</a>
 		</li>
 	</ul>
@@ -55,51 +63,27 @@
     <div class="left">
         <i class='bx bx-menu bx-sm' #menuBar (click)="toggleSidebar()" 
            [ngStyle]="{'color': isDarkMode ? '#4FCBEB' : '#1E5F74'}"></i>&nbsp;&nbsp;&nbsp;
-        <a href="#" class="nav-link" style="font-size: 20px;">Categories</a>
+        <a href="#" class="nav-link" style="font-size: 20px;">{{ 'categories' | translate }}</a>
     </div>
     
     <form action="#" #searchForm>
-        <input type="search" placeholder="Search...">
+        <input type="search" placeholder="{{ 'search' | translate }}...">
         <button type="submit" (click)="toggleSearchForm($event, searchForm, searchIcon)">
             <i class='bx bx-search' #searchIcon></i>
         </button>
     </form>
     
     <div class="right">
-        <!-- <div class="theme-toggle">
-            <input type="checkbox" class="checkbox" id="switch-mode" #switchMode hidden 
-                   [checked]="isDarkMode" (change)="toggleDarkMode()">
-            <label for="switch-mode" class="toggle-label" [class.dark-active]="isDarkMode">
-                <i class='bx bx-moon'></i>
-                <i class='bx bx-sun'></i>
-                <span class="ball" [ngStyle]="{'background-color': isDarkMode ? '#4FCBEB' : '#1E5F74'}"></span>
-            </label>
-        </div>
-         -->
-        <a href="#" class="notification" (click)="toggleNotificationMenu($event)">
-            <i class='bx bx-bell' [ngStyle]="{'color': isDarkMode ? '#4FCBEB' : '#1E5F74'}"></i>
-            <!-- <span class="badge">8</span> -->
-        </a>
-        
+        <app-notification-panel></app-notification-panel>
         <a href="#" class="profile" (click)="toggleProfileMenu($event)">
             <img src="https://placehold.co/600x400/png" alt="Profile">
         </a>
         
-        <div class="notification-menu" id="notificationMenu">
-            <ul>
-                <li>New message from John</li>
-                <li>Your order has been shipped</li>
-                <li>New comment on your post</li>
-                <li>Update available for your app</li>
-                <li>Reminder: Meeting at 3PM</li>
-            </ul>
-        </div>
-        
         <div class="profile-menu" id="profileMenu">
             <ul>
-                <li><a href="#">My Profile</a></li>
-                <li><a href="#">Settings</a></li>
-                <li><a href="#">Log Out</a></li>
+                <li><a href="#">{{ 'myProfile' | translate }}</a></li>
+                <li><a href="#">{{ 'settings' | translate }}</a></li>
+                <li><a href="#">{{ 'logout' | translate }}</a></li>
             </ul>
         </div>
     </div>

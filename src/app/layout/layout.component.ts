@@ -4,31 +4,32 @@ import { RouterModule, Router } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ThemeService } from '../services/theme.service';
 import { LanguageService } from '../services/language.service';
+import { TranslatePipe } from '../pipes/translate.pipe';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { faHeartPulse } from '@fortawesome/free-solid-svg-icons';
+import { NotificationPanelComponent } from '../components/notification-panel/notification-panel.component';
+import { FirebaseService } from '../services/firebase.service';
 
 interface Patient {
-  id: number;
+  id: string;
   nom: string;
   prenom: string;
-  phone: string;
-  cin: string;
-  braceletCode: string;
-  imageUrl: string;
   age: number;
   genre: string;
+  tel?: string;
+  cin: string;
+  code: string;
+  imageUrl?: string;
 }
 
 // Nouvelle interface pour les rendez-vous
 interface Appointment {
-  id: number;
-  patientId: number;
-  patientNom: string;
-  patientPrenom: string;
+  id: string;
+  patientId: string;
   date: Date;
   time: string;
-  status: 'confirmed' | 'waiting' | 'cancelled' | 'completed';
   notes?: string;
+  status?: 'confirmed' | 'waiting' | 'cancelled' | 'completed';
 }
 
 @Component({
@@ -36,7 +37,7 @@ interface Appointment {
   templateUrl: './layout.component.html',
   styleUrls: ['./layout.component.css'],
   standalone: true,
-  imports: [CommonModule, RouterModule, ReactiveFormsModule, FontAwesomeModule]
+  imports: [CommonModule, RouterModule, ReactiveFormsModule, FontAwesomeModule, TranslatePipe, NotificationPanelComponent]
 })
 export class LayoutComponent implements OnInit, AfterViewInit {
   isDarkMode = false;
@@ -59,8 +60,7 @@ export class LayoutComponent implements OnInit, AfterViewInit {
   isPatientModalOpen: boolean = false;
   patientForm!: FormGroup;
   imagePreview: string | null = null;
-  patients: Patient[] = [
-    ];
+  patients: Patient[] = [];
   
   editingPatient: Patient | null = null;
   
@@ -75,68 +75,41 @@ export class LayoutComponent implements OnInit, AfterViewInit {
   
   faHeartPulse = faHeartPulse;
   
+  isRtl: boolean = false;
+  
   constructor(
     private themeService: ThemeService,
     private renderer: Renderer2,
     private formBuilder: FormBuilder,
     private languageService: LanguageService,
-    private router: Router
+    private router: Router,
+    private firebaseService: FirebaseService
   ) {}
   
   ngOnInit(): void {
     console.log('Component initialized');
     
-    // Récupérer le thème enregistré ou utiliser la préférence du système
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme) {
-      this.currentTheme = savedTheme;
-    } else {
-      // Utiliser la préférence du système si disponible
-      if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-        this.currentTheme = 'theme-dark';
-      }
-    }
-    // Appliquer le thème au document
-    document.body.className = this.currentTheme;
-    
-    // Récupérer la préférence de l'utilisateur dans le localStorage
-    const savedDarkMode = localStorage.getItem('darkMode');
-    
-    if (savedDarkMode) {
-      this.isDarkMode = savedDarkMode === 'true';
-    } else {
-      // Utiliser les préférences du système
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      this.isDarkMode = prefersDark;
+    // Vérifier l'authentification
+    const user = this.firebaseService.getCurrentUser();
+    if (!user) {
+      console.log('Utilisateur non connecté, redirection vers la page de login');
+      this.router.navigate(['/login']);
+      return;
     }
     
-    // Appliquer le thème dès le chargement
-    this.applyTheme();
+    console.log('Utilisateur connecté:', user);
     
-    // Abonnez-vous au service de thème
-    this.themeService.darkMode$.subscribe(isDark => {
-      this.isDarkMode = isDark;
-      // Les classes sont déjà appliquées par le service
-    });
-    
-    // Initialiser le formulaire avec les nouveaux champs
+    // Initialiser le formulaire de patient
     this.patientForm = this.formBuilder.group({
       nom: ['', Validators.required],
       prenom: ['', Validators.required],
-      phone: ['', [Validators.required, Validators.pattern(/^\d{10}$/)]],
-      cin: ['', Validators.required],
-      braceletCode: ['', Validators.required],
-      age: ['', [Validators.required, Validators.min(0), Validators.max(120)]],
+      age: ['', [Validators.required, Validators.min(0)]],
       genre: ['', Validators.required],
-      image: [null]
+      tel: ['', [Validators.required, Validators.pattern(/^[0-9]{10}$/)]],
+      cin: ['', [Validators.required, Validators.pattern(/^[0-9]{8}$/)]],
+      code: ['', Validators.required],
+      imageUrl: ['']
     });
-    
-    this.loadThemePreference();
-    
-    // Initialiser les jours du calendrier
-    this.initCalendarDays();
-    
-    this.generateCalendarDays();
     
     // Initialiser le formulaire de rendez-vous
     this.appointmentForm = this.formBuilder.group({
@@ -147,6 +120,8 @@ export class LayoutComponent implements OnInit, AfterViewInit {
 
     this.languageService.currentLanguage$.subscribe(lang => {
       this.currentLanguage = lang;
+      this.isRtl = lang === 'ar';
+      this.adjustLayout();
     });
   }
   
@@ -353,13 +328,10 @@ export class LayoutComponent implements OnInit, AfterViewInit {
       this.patientForm.patchValue({
         nom: patient.nom,
         prenom: patient.prenom,
-        phone: patient.phone,
-        cin: patient.cin,
-        braceletCode: patient.braceletCode,
         age: patient.age,
         genre: patient.genre
       });
-      this.imagePreview = patient.imageUrl;
+      this.imagePreview = patient.imageUrl || null;
     } else {
       this.editingPatient = null;
       this.patientForm.reset();
@@ -388,7 +360,7 @@ export class LayoutComponent implements OnInit, AfterViewInit {
     if (!file) return;
 
     // Stocker le fichier dans le formulaire
-    this.patientForm.patchValue({ image: file });
+    this.patientForm.patchValue({ imageUrl: file });
     
     // Créer un aperçu de l'image
     const reader = new FileReader();
@@ -405,14 +377,14 @@ export class LayoutComponent implements OnInit, AfterViewInit {
     
     // Créer un nouvel objet patient
     const newPatient: Patient = {
-      id: this.patients.length + 1,
+      id: this.patients.length + 1 + '',
       nom: formValues.nom,
       prenom: formValues.prenom,
-      phone: formValues.phone,
-      cin: formValues.cin,
-      braceletCode: formValues.braceletCode,
       age: formValues.age,
       genre: formValues.genre,
+      tel: formValues.tel,
+      cin: formValues.cin,
+      code: formValues.code,
       imageUrl: this.imagePreview || 'https://placehold.co/600x400/png'
     };
 
@@ -440,11 +412,11 @@ export class LayoutComponent implements OnInit, AfterViewInit {
         ...this.patients[index],
         nom: formValues.nom,
         prenom: formValues.prenom,
-        phone: formValues.phone,
-        cin: formValues.cin,
-        braceletCode: formValues.braceletCode,
         age: formValues.age,
         genre: formValues.genre,
+        tel: formValues.tel,
+        cin: formValues.cin,
+        code: formValues.code,
         imageUrl: this.imagePreview || this.patients[index].imageUrl
       };
     }
@@ -461,7 +433,7 @@ export class LayoutComponent implements OnInit, AfterViewInit {
     this.openPatientModal(patient);
   }
 
-  deletePatient(id: number) {
+  deletePatient(id: string) {
     // Confirmer la suppression
     if (confirm('Êtes-vous sûr de vouloir supprimer ce patient ?')) {
       this.patients = this.patients.filter(patient => patient.id !== id);
@@ -610,18 +582,15 @@ export class LayoutComponent implements OnInit, AfterViewInit {
     if (this.appointmentForm.invalid || !this.selectedDate) return;
 
     const formValues = this.appointmentForm.value;
-    const selectedPatient = this.patients.find(p => p.id === +formValues.patientId);
+    const selectedPatient = this.patients.find(p => p.id === formValues.patientId);
     
     if (!selectedPatient) return;
 
     const newAppointment: Appointment = {
-      id: Date.now(), // Utilisation du timestamp comme ID temporaire
-      patientId: selectedPatient.id,
-      patientNom: selectedPatient.nom,
-      patientPrenom: selectedPatient.prenom,
+      id: Date.now() + '',
+      patientId: formValues.patientId,
       date: new Date(this.selectedDate),
       time: formValues.time,
-      status: 'confirmed',
       notes: formValues.notes
     };
 
@@ -648,14 +617,14 @@ export class LayoutComponent implements OnInit, AfterViewInit {
     document.body.style.overflow = 'hidden';
   }
 
-  updateAppointmentStatus(appointmentId: number, status: 'confirmed' | 'waiting' | 'cancelled' | 'completed') {
+  updateAppointmentStatus(appointmentId: string, status: 'confirmed' | 'waiting' | 'cancelled' | 'completed') {
     const index = this.appointments.findIndex(a => a.id === appointmentId);
     if (index !== -1) {
       this.appointments[index].status = status;
     }
   }
 
-  deleteAppointment(appointmentId: number) {
+  deleteAppointment(appointmentId: string) {
     if (confirm('Êtes-vous sûr de vouloir supprimer définitivement ce rendez-vous ?')) {
       this.appointments = this.appointments.filter(a => a.id !== appointmentId);
     }
@@ -690,7 +659,7 @@ export class LayoutComponent implements OnInit, AfterViewInit {
 
     const formValues = this.appointmentForm.value;
     const appointmentId = formValues.appointmentId;
-    const selectedPatient = this.patients.find(p => p.id === +formValues.patientId);
+    const selectedPatient = this.patients.find(p => p.id === formValues.patientId);
     
     if (!selectedPatient) return;
 
@@ -700,9 +669,7 @@ export class LayoutComponent implements OnInit, AfterViewInit {
     if (index !== -1) {
       this.appointments[index] = {
         ...this.appointments[index],
-        patientId: selectedPatient.id,
-        patientNom: selectedPatient.nom,
-        patientPrenom: selectedPatient.prenom,
+        patientId: formValues.patientId,
         date: new Date(this.selectedDate),
         time: formValues.time,
         notes: formValues.notes
@@ -721,9 +688,20 @@ export class LayoutComponent implements OnInit, AfterViewInit {
 
   logout(event: Event) {
     event.preventDefault();
-    // Clear auth data
-    localStorage.removeItem('isLoggedIn');
-    // Navigate to login page
-    this.router.navigate(['/login']);
+    // Déconnexion de Firebase
+    this.firebaseService.logout().then(() => {
+      // Clear auth data
+      localStorage.removeItem('user');
+      // Navigate to login page
+      this.router.navigate(['/login']);
+    });
+  }
+
+  private adjustLayout(): void {
+    if (this.isRtl) {
+      document.body.classList.add('rtl-layout');
+    } else {
+      document.body.classList.remove('rtl-layout');
+    }
   }
 }

@@ -1,0 +1,95 @@
+<div class="settings-container" [ngClass]="{'dark-mode': isDarkMode}">
+  <div class="main-content">
+    <div class="content-header">
+      <h1>Paramètres</h1>
+    </div>
+
+    <div class="settings-grid">
+      <!-- Paramètres du compte -->
+      <div class="settings-card">
+        <h3>
+          <fa-icon [icon]="faUser"></fa-icon>
+          Paramètres du compte
+        </h3>
+        <div class="settings-form">
+          <form [formGroup]="accountForm" (ngSubmit)="updateAccount()">
+            <div class="form-group">
+              <label>Nom</label>
+              <input type="text" formControlName="nom" class="form-control">
+            </div>
+            <div class="form-group">
+              <label>Prénom</label>
+              <input type="text" formControlName="prenom" class="form-control">
+            </div>
+            <div class="form-group">
+              <label>Email</label>
+              <input type="email" formControlName="email" class="form-control" readonly>
+            </div>
+            <button type="submit" class="btn btn-primary" [disabled]="!accountForm.valid || !accountForm.dirty">
+              Enregistrer les modifications
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Changement de mot de passe -->
+      <div class="settings-card">
+        <h3>
+          <fa-icon [icon]="faLock"></fa-icon>
+          Changer le mot de passe
+        </h3>
+        <div class="settings-form">
+          <form [formGroup]="passwordForm" (ngSubmit)="updatePassword()">
+            <div class="form-group">
+              <label>Mot de passe actuel</label>
+              <div class="password-input">
+                <input [type]="showCurrentPassword ? 'text' : 'password'" formControlName="currentPassword" class="form-control">
+                <button type="button" class="toggle-password" (click)="showCurrentPassword = !showCurrentPassword">
+                  <fa-icon [icon]="showCurrentPassword ? faEyeSlash : faEye"></fa-icon>
+                </button>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Nouveau mot de passe</label>
+              <div class="password-input">
+                <input [type]="showNewPassword ? 'text' : 'password'" formControlName="newPassword" class="form-control">
+                <button type="button" class="toggle-password" (click)="showNewPassword = !showNewPassword">
+                  <fa-icon [icon]="showNewPassword ? faEyeSlash : faEye"></fa-icon>
+                </button>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Confirmer le nouveau mot de passe</label>
+              <div class="password-input">
+                <input [type]="showConfirmPassword ? 'text' : 'password'" formControlName="confirmPassword" class="form-control">
+                <button type="button" class="toggle-password" (click)="showConfirmPassword = !showConfirmPassword">
+                  <fa-icon [icon]="showConfirmPassword ? faEyeSlash : faEye"></fa-icon>
+                </button>
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary" [disabled]="!passwordForm.valid">
+              Changer le mot de passe
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Paramètres d'apparence -->
+      <div class="settings-card">
+        <h3>
+          <fa-icon [icon]="faPalette"></fa-icon>
+          Apparence
+        </h3>
+        <div class="settings-form">
+          <div class="theme-toggle">
+            <label class="switch">
+              <input type="checkbox" [checked]="isDarkMode" (change)="toggleDarkMode()">
+              <span class="slider"></span>
+            </label>
+            <span class="theme-label">Mode sombre</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div> 

@@ -1,21 +1,21 @@
 <div class="settings-container">
   <div class="breadcrumb">
-    <a routerLink="/dashboard">Dashboard</a>
+    <a routerLink="/dashboard">{{ 'dashboard' | translate }}</a>
     <i class='bx bx-chevron-right'></i>
-    <a class="active">Paramètres</a>
+    <a class="active">{{ 'settings' | translate }}</a>
   </div>
 
   <div class="settings-grid">
     <!-- Apparence -->
     <div class="settings-card appearance-card">
       <div class="card-header">
-        <h2><i class='bx bx-palette'></i> Apparence</h2>
+        <h2><i class='bx bx-palette'></i> {{ 'appearance' | translate }}</h2>
       </div>
       <div class="card-body">
         <div class="setting-item">
           <div class="setting-info">
-            <h3>Mode sombre</h3>
-            <p>Changer l'apparence de l'application</p>
+            <h3>{{ 'darkMode' | translate }}</h3>
+            <p>{{ 'changeAppearance' | translate }}</p>
           </div>
           <div class="setting-control">
             <label class="toggle-switch">
@@ -33,7 +33,7 @@
     <!-- Langue -->
     <div class="settings-card language-card">
       <div class="card-header">
-        <h2><i class='bx bx-globe'></i> Langue</h2>
+        <h2><i class='bx bx-globe'></i> {{ 'language' | translate }}</h2>
       </div>
       <div class="card-body">
         <div class="language-options">
@@ -50,7 +50,7 @@
     <!-- Profil -->
     <div class="settings-card profile-card">
       <div class="card-header">
-        <h2><i class='bx bx-user'></i> Profil utilisateur</h2>
+        <h2><i class='bx bx-user'></i> {{ 'profile' | translate }}</h2>
       </div>
       <div class="card-body">
         <div class="profile-preview">
@@ -61,55 +61,21 @@
             </button>
           </div>
           <div class="profile-info">
-            <h3>Dr. {{ medecin?.nom }} {{ medecin?.prenom }}</h3>
-            <p class="profile-role">Médecin généraliste</p>
+            <h3>{{ 'doctor' | translate }} {{ medecin?.nom }} {{ medecin?.prenom }}</h3>
+            <p class="profile-role">{{ 'generalPractitioner' | translate }}</p>
             <p class="profile-email">{{ medecin?.email }}</p>
           </div>
         </div>
         <div class="profile-actions">
           <button class="btn-primary">
             <i class='bx bx-edit-alt'></i>
-            Modifier le profil
+            {{ 'editProfile' | translate }}
           </button>
-          <button class="btn-secondary">
+          <button class="btn-secondary" (click)="changePassword()">
             <i class='bx bx-lock-alt'></i>
-            Changer le mot de passe
+            {{ 'changePassword' | translate }}
           </button>
         </div>
       </div>
-    </div>
-
-    <!-- Notifications -->
-    <div class="settings-card notifications-card">
-      <div class="card-header">
-        <h2><i class='bx bx-bell'></i> Notifications</h2>
-      </div>
-      <div class="card-body">
-        <div class="setting-item">
-          <div class="setting-info">
-            <h3>Notifications par email</h3>
-            <p>Recevoir des rappels de rendez-vous</p>
-          </div>
-          <div class="setting-control">
-            <label class="toggle-switch">
-              <input type="checkbox" checked>
-              <span class="toggle-slider"></span>
-            </label>
-          </div>
-        </div>
-        <div class="setting-item">
-          <div class="setting-info">
-            <h3>Notifications push</h3>
-            <p>Alertes dans l'application</p>
-          </div>
-          <div class="setting-control">
-            <label class="toggle-switch">
-              <input type="checkbox" checked>
-              <span class="toggle-slider"></span>
-            </label>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+    </div>    
 </div> 

@@ -1,0 +1,65 @@
+<div class="login-choice-container">
+  <div class="background-pattern"></div>
+  <div class="content-wrapper">
+    <div class="header">
+      <div class="login-header">
+        <fa-icon [icon]="faHeartPulse" style="font-size: 80px; color: #1E5F74;"></fa-icon>
+      <h1>Bienvenue sur notre plateforme médicale CardioTrack</h1>
+      <p class="subtitle">Sélectionnez votre profil pour accéder à votre espace</p>
+    </div>
+    
+    <div class="choice-cards">
+      <button class="choice-card admin-card" (click)="goToLoginAdmin()">
+        <div class="card-content">
+          <div class="card-icon">
+            <i class="fas fa-user-shield"></i>
+          </div>
+          <div class="card-text">
+            <h2>Administrateur</h2>
+            <p>Gestion complète du système</p>
+          </div>
+          <div class="card-hover">
+            <span>Accéder</span>
+            <i class="fas fa-arrow-right"></i>
+          </div>
+        </div>
+      </button>
+
+      <button class="choice-card doctor-card" (click)="goToLogin()">
+        <div class="card-content">
+          <div class="card-icon">
+            <i class="fas fa-user-md"></i>
+          </div>
+          <div class="card-text">
+            <h2>Médecin</h2>
+            <p>Gestion des patients et consultations</p>
+          </div>
+          <div class="card-hover">
+            <span>Accéder</span>
+            <i class="fas fa-arrow-right"></i>
+          </div>
+        </div>
+      </button>
+
+      <button class="choice-card secretary-card" (click)="goToLoginSecretaire()">
+        <div class="card-content">
+          <div class="card-icon">
+            <i class="fas fa-user-tie"></i>
+          </div>
+          <div class="card-text">
+            <h2>Infirmière</h2>
+            <p>Gestion des patients et des rendez-vous</p>
+          </div>
+          <div class="card-hover">
+            <span>Accéder</span>
+            <i class="fas fa-arrow-right"></i>
+          </div>
+        </div>
+      </button>
+    </div>
+
+    <div class="footer">
+      <p>© 2024 Plateforme Médicale. Tous droits réservés.</p>
+    </div>
+  </div>
+</div>

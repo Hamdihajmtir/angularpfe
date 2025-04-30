@@ -377,53 +377,107 @@
 
 /* Styles pour les graphiques */
 .vital-signs-charts {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-  gap: 20px;
-  margin: 25px 0;
-}
-
-.chart-container {
+  margin-bottom: 2rem;
   background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
-  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  cursor: pointer;
+  transition: transform 0.2s ease;
+  position: relative;
 }
 
-.chart-header {
+.vital-signs-charts::after {
+  content: '👆 Double-cliquez pour agrandir';
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(0, 0, 0, 0.6);
+  color: white;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.vital-signs-charts:hover::after {
+  opacity: 1;
+}
+
+.vital-signs-charts:hover {
+  transform: scale(1.01);
+}
+
+.vital-signs-charts .card-header {
+  padding: 1.5rem;
+  border-bottom: 1px solid #eee;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 15px;
 }
 
-.chart-header h3 {
-  color: #2c3e50;
-  margin: 0;
-}
-
-.chart-period {
+.chart-controls {
   display: flex;
-  gap: 5px;
+  gap: 0.5rem;
 }
 
-.period-btn {
-  padding: 5px 10px;
-  background: #f8f9fa;
-  border: 1px solid #e9ecef;
-  border-radius: 4px;
+.btn-chart {
+  padding: 0.5rem 1rem;
+  border: 1px solid #1E5F74;
+  background: transparent;
+  color: #1E5F74;
+  border-radius: 6px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
 }
 
-.period-btn.active {
+.btn-chart.active {
   background: #1E5F74;
   color: white;
-  border-color: #1E5F74;
 }
 
-.chart-body {
-  height: 250px;
+.btn-chart:hover {
+  background: rgba(30, 95, 116, 0.1);
+}
+
+.chart-container {
+  padding: 1.5rem;
+  height: 400px;
+  position: relative;
+  width: 100%;
+  background: white;
+}
+
+canvas#proVitalChart {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* Dark mode support */
+body.dark .vital-signs-charts {
+  background: var(--card-bg);
+}
+
+body.dark .vital-signs-charts .card-header {
+  border-color: var(--border-color);
+}
+
+body.dark .btn-chart {
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+}
+
+body.dark .btn-chart.active {
+  background: var(--accent-color);
+  color: var(--text-color);
+}
+
+body.dark .btn-chart:hover {
+  background: rgba(79, 203, 235, 0.1);
+}
+
+body.dark .chart-container {
+  background: var(--card-bg);
 }
 
 /* Styles pour les tableaux de rendez-vous */
@@ -590,4 +644,153 @@ body.dark .report-editor textarea {
 
 body.dark .report-editor textarea::placeholder {
   color: #6c757d;
+}
+
+.chart-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.modal-content {
+  background: white;
+  width: 95%;
+  height: 95%;
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+body.dark .modal-content {
+  background: var(--card-bg);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #666;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.close-btn:hover {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.modal-chart-container {
+  flex: 1;
+  position: relative;
+  width: 100%;
+  height: calc(100% - 60px);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#fullscreenChart {
+  width: 100% !important;
+  height: 100% !important;
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.modal-controls {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.vital-signs-charts {
+  cursor: pointer;
+  transition: transform 0.2s ease;
+  position: relative;
+}
+
+.vital-signs-charts::after {
+  content: '👆 Double-cliquez pour agrandir';
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(0, 0, 0, 0.6);
+  color: white;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.vital-signs-charts:hover::after {
+  opacity: 1;
+}
+
+.vital-signs-charts:hover {
+  transform: scale(1.01);
+}
+
+.zoom-controls {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.zoom-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: #f1f5f9;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.zoom-btn:hover {
+  background: #e2e8f0;
+  color: #334155;
+  transform: translateY(-1px);
+}
+
+.zoom-btn i {
+  font-size: 14px;
+}
+
+body.dark .zoom-btn {
+  background: #2d3748;
+  color: #a0aec0;
+}
+
+body.dark .zoom-btn:hover {
+  background: #4a5568;
+  color: #e2e8f0;
 }

@@ -1,13 +1,13 @@
 <div class="patient-detail-container">
   <div class="breadcrumb">
-    <a (click)="goBack()">Dashboard</a>
+    <a (click)="goBack()">{{ 'dashboard' | translate }}</a>
     <i class='bx bx-chevron-right'></i>
-    <a class="active">Détails du patient</a>
+    <a class="active">{{ 'patientDetails' | translate }}</a>
   </div>
 
   <div class="card patient-detail-card" *ngIf="patient">
     <div class="card-header">
-      <h2>Détails du patient</h2>
+      <h2>{{ 'patientDetails' | translate }}</h2>
       <div class="actions">
         <button class="btn-icon" (click)="goBack()"><i class='bx bx-arrow-back'></i></button>
       </div>
@@ -21,23 +21,23 @@
       <div class="patient-info-container">
         <h1>{{ patient.prenom }} {{ patient.nom }}</h1>
         <div class="patient-main-info">
-          <span class="patient-age-gender">{{ patient.genre === 'M' ? 'Homme' : 'Femme' }}, {{ patient.age }} ans</span>
+          <span class="patient-age-gender">{{ patient.genre === 'M' ? ('male' | translate) : ('female' | translate) }}, {{ patient.age }} {{ 'years' | translate }}</span>
           <span class="patient-id">ID: {{ patient.id }}</span>
         </div>
         
         <div class="info-grid">
           <div class="info-item">
-            <label>Téléphone</label>
+            <label>{{ 'phone' | translate }}</label>
             <p><i class='bx bx-phone'></i> {{ patient.phone }}</p>
           </div>
           
           <div class="info-item">
-            <label>CIN</label>
+            <label>{{ 'cin' | translate }}</label>
             <p><i class='bx bx-id-card'></i> {{ patient.cin }}</p>
           </div>
           
           <div class="info-item">
-            <label>Code Bracelet</label>
+            <label>{{ 'braceletCode' | translate }}</label>
             <p class="bracelet-code"><i class='bx bx-barcode'></i> {{ patient.braceletCode }}</p>
           </div>
         </div>
@@ -52,95 +52,83 @@
   </div>
   
   <div class="not-found" *ngIf="patientId && !patient">
-    <h2>Patient non trouvé</h2>
-    <p>Le patient avec l'ID {{ patientId }} n'existe pas.</p>
-    <button class="btn-primary" (click)="goBack()">Retour au Dashboard</button>
+    <h2>{{ 'patientNotFound' | translate }}</h2>
+    <p>{{ 'patientWithIdNotExist' | translate }} {{ patientId }}</p>
+    <button class="btn-primary" (click)="goBack()">{{ 'backToDashboard' | translate }}</button>
   </div>
 </div> 
 
+<!-- Vital Signs Charts Section -->
+<div class="vital-signs-charts" (dblclick)="openFullscreenChart()">
+  <div class="card-header">
+    <h3>Courbes Vitales en Temps Réel</h3>
+    <div class="zoom-controls">
+      <button class="zoom-btn" (click)="$event.stopPropagation(); zoomIn()">
+        <i class="fas fa-search-plus"></i>
+      </button>
+      <button class="zoom-btn" (click)="$event.stopPropagation(); zoomOut()">
+        <i class="fas fa-search-minus"></i>
+      </button>
+      <button class="zoom-btn" (click)="$event.stopPropagation(); resetZoom()">
+        <i class="fas fa-undo"></i>
+      </button>
+    </div>
+  </div>
+  <div class="chart-container">
+    <canvas id="proVitalChart"></canvas>
+  </div>
+</div>
 
+<!-- Modal pour le graphique en plein écran -->
+<div class="chart-modal" *ngIf="isFullscreenChart">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>Courbes Vitales en Temps Réel</h3>
+      <div class="zoom-controls">
+        <button class="zoom-btn" (click)="zoomInFullscreen()">
+          <i class="fas fa-search-plus"></i>
+        </button>
+        <button class="zoom-btn" (click)="zoomOutFullscreen()">
+          <i class="fas fa-search-minus"></i>
+        </button>
+        <button class="zoom-btn" (click)="resetZoomFullscreen()">
+          <i class="fas fa-undo"></i>
+        </button>
+        <button class="close-btn" (click)="closeFullscreenChart()">×</button>
+      </div>
+    </div>
+    <div class="modal-chart-container">
+      <canvas id="fullscreenChart" style="width: 100%; height: 100%;"></canvas>
+    </div>
+  </div>
+</div>
 
-
+<!-- Current Values Section -->
 <div class="patient-status">
   <div class="vital-sign-current" [ngClass]="{'has-data': hasMeasurements, 'no-data': !hasMeasurements}">
     <div class="value">{{ heartRate }} bpm</div>
-    <div class="label">Rythme cardiaque</div>
-    <div class="status-indicator" *ngIf="!hasMeasurements">Données non disponibles</div>
+    <div class="label">{{ 'heartRate' | translate }}</div>
+    <div class="status-indicator" *ngIf="!hasMeasurements">{{ 'noDataAvailable' | translate }}</div>
   </div>
   <div class="vital-sign-current" [ngClass]="{'has-data': hasMeasurements, 'no-data': !hasMeasurements}">
     <div class="value">{{ oxygenLevel }}%</div>
-    <div class="label">Oxygène</div>
-    <div class="status-indicator" *ngIf="!hasMeasurements">Données non disponibles</div>
+    <div class="label">{{ 'oxygen' | translate }}</div>
+    <div class="status-indicator" *ngIf="!hasMeasurements">{{ 'noDataAvailable' | translate }}</div>
   </div>
   <div class="vital-sign-current">
     <div class="value">38°C</div>
-    <div class="label">Température</div>
+    <div class="label">{{ 'temperature' | translate }}</div>
   </div>
 </div>
 
-
-<!-- Graphiques des signes vitaux -->
-<div class="vital-signs-charts">
-  <div class="chart-container">
-    <div class="chart-header">
-      <h3>Rythme cardiaque</h3>
-      <div class="chart-period">
-        <button class="period-btn" [class.active]="chartPeriod === 'day'" 
-            (click)="changeChartPeriod('day')">Jour</button>
-        <button class="period-btn" [class.active]="chartPeriod === 'week'" 
-            (click)="changeChartPeriod('week')">Semaine</button>
-        <button class="period-btn" [class.active]="chartPeriod === 'month'" 
-            (click)="changeChartPeriod('month')">Mois</button>
-      </div>
-    </div>
-    <div class="chart-body">
-      <canvas id="heartRateChart"></canvas>
-    </div>
-  </div>
-
-  <div class="chart-container">
-    <div class="chart-header">
-      <h3>Niveau d'oxygène</h3>
-      <div class="chart-period">
-        <button class="period-btn" [class.active]="chartPeriod === 'day'" 
-            (click)="changeChartPeriod('day')">Jour</button>
-        <button class="period-btn" [class.active]="chartPeriod === 'week'" 
-            (click)="changeChartPeriod('week')">Semaine</button>
-        <button class="period-btn" [class.active]="chartPeriod === 'month'" 
-            (click)="changeChartPeriod('month')">Mois</button>
-      </div>
-    </div>
-    <div class="chart-body">
-      <canvas id="oxygenLevelChart"></canvas>
-    </div>
-  </div>
-
-  <div class="chart-container">
-    <div class="chart-header">
-      <h3>Température</h3>
-      <div class="chart-period">
-        <button class="period-btn" [class.active]="chartPeriod === 'day'" 
-            (click)="changeChartPeriod('day')">Jour</button>
-        <button class="period-btn" [class.active]="chartPeriod === 'week'" 
-            (click)="changeChartPeriod('week')">Semaine</button>
-        <button class="period-btn" [class.active]="chartPeriod === 'month'" 
-            (click)="changeChartPeriod('month')">Mois</button>
-      </div>
-    </div>
-    <div class="chart-body">
-      <canvas id="temperatureChart"></canvas>
-    </div>
-  </div>
-</div>
-
-<!-- Ajouter cette section après les graphiques et avant l'historique des rendez-vous -->
+<!-- Medical Report Section -->
 <div class="medical-report-section">
   <div class="section-header">
-    <h3>Rapport Médical</h3>
+    <h3>{{ 'medicalReport' | translate }}</h3>
     <div class="report-actions">
       <button class="report-btn print" (click)="printMedicalReport()" 
         [disabled]="!medicalReportForm.valid">
-        <i class='bx bx-printer'></i> Imprimer
+        <i class='bx bx-printer'></i> {{ 'print' | translate }}
       </button>
       <!-- <button class="report-btn download" (click)="downloadPDF()"
         [disabled]="!medicalReportForm.valid">
@@ -152,19 +140,19 @@
   <div class="report-editor">
     <form [formGroup]="medicalReportForm" (ngSubmit)="editingMedicalReport()? updateMedicalReport() : addMedicalReport()">
       <div class="form-group">
-        <label for="reportContent">Notes et observations médicales</label>
+        <label for="reportContent">{{ 'medicalNotesAndObservations' | translate }}</label>
         <textarea 
           id="reportContent" 
           formControlName="reportContent" 
           rows="10" 
-          placeholder="Saisissez ici vos observations cliniques, diagnostics et recommandations...">
+          placeholder="{{ 'enterClinicalObservations' | translate }}">
         </textarea>
       </div>
       <div class="report-save">
         <button class="save-btn" 
           (click)="saveMedicalReport()" 
           [disabled]="!medicalReportForm.valid">
-          <i class='bx bx-save'></i> Enregistrer le rapport
+          <i class='bx bx-save'></i> {{ 'saveReport' | translate }}
         </button>
       </div>
     </form>
@@ -173,11 +161,11 @@
 
 <div class="patient-detail-container">
   <div class="back-button">
-    <button (click)="goBack()"><i class='bx bx-arrow-back'></i> Retour au tableau de bord</button>
+    <button (click)="goBack()"><i class='bx bx-arrow-back'></i> {{ 'backToDashboard' | translate }}</button>
   </div>
 
   <div *ngIf="isLoading" class="loading">
-    <p>Chargement des détails du patient...</p>
+    <p>{{ 'loadingPatientDetails' | translate }}</p>
   </div>
 
   <div *ngIf="errorMessage" class="error-message">
@@ -191,53 +179,53 @@
       </div>
       <div class="patient-name">
         <h1>{{ patient.prenom }} {{ patient.nom }}</h1>
-        <p class="patient-gender-age">{{ patient.genre }}, {{ patient.age }} ans</p>
+        <p class="patient-gender-age">{{ patient.genre === 'M' ? ('male' | translate) : ('female' | translate) }}, {{ patient.age }} {{ 'years' | translate }}</p>
       </div>
       <div class="patient-actions">
-        <button class="edit-btn" (click)="editPatient()"><i class='bx bx-edit-alt'></i> Modifier</button>
+        <button class="edit-btn" (click)="editPatient()"><i class='bx bx-edit-alt'></i> {{ 'edit' | translate }}</button>
       </div>
     </div>
 
     <div class="patient-info-detail">
       <div class="info-section">
-        <h2>Informations personnelles</h2>
+        <h2>{{ 'personalInformation' | translate }}</h2>
         <div class="info-grid">
           <div class="info-item">
-            <span class="label">Nom complet</span>
+            <span class="label">{{ 'fullName' | translate }}</span>
             <span class="value">{{ patient.prenom }} {{ patient.nom }}</span>
           </div>
           <div class="info-item">
-            <span class="label">Âge</span>
-            <span class="value">{{ patient.age }} ans</span>
+            <span class="label">{{ 'age' | translate }}</span>
+            <span class="value">{{ patient.age }} {{ 'years' | translate }}</span>
           </div>
           <div class="info-item">
-            <span class="label">Genre</span>
-            <span class="value">{{ patient.genre }}</span>
+            <span class="label">{{ 'gender' | translate }}</span>
+            <span class="value">{{ patient.genre === 'M' ? ('male' | translate) : ('female' | translate) }}</span>
           </div>
           <div class="info-item">
-            <span class="label">Téléphone</span>
+            <span class="label">{{ 'phone' | translate }}</span>
             <span class="value">{{ patient.phone }}</span>
           </div>
           <div class="info-item">
-            <span class="label">CIN</span>
+            <span class="label">{{ 'cin' | translate }}</span>
             <span class="value">{{ patient.cin }}</span>
           </div>
           <div class="info-item">
-            <span class="label">Code bracelet</span>
+            <span class="label">{{ 'braceletCode' | translate }}</span>
             <span class="value">{{ patient.braceletCode }}</span>
           </div>
         </div>
       </div>
 
       <div class="info-section">
-        <h2>Historique</h2>
+        <h2>{{ 'history' | translate }}</h2>
         <div class="info-grid">
           <div class="info-item">
-            <span class="label">Date de création</span>
+            <span class="label">{{ 'creationDate' | translate }}</span>
             <span class="value">{{ patient.dateCreation }}</span>
           </div>
           <div class="info-item">
-            <span class="label">Dernière modification</span>
+            <span class="label">{{ 'lastModification' | translate }}</span>
             <span class="value">{{ patient.dateModification }}</span>
           </div>
         </div>

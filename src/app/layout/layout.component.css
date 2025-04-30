@@ -2088,3 +2088,19 @@ body.dark .has-event::after {
 	font-size: 40px;
 	color: white;
   }
+
+/* Styles RTL pour le layout */
+.rtl-layout .side-menu a {
+  text-align: right;
+}
+
+.rtl-layout .side-menu a i {
+  margin-right: 0;
+  margin-left: 1rem;
+}
+
+.rtl-layout .form-group label {
+  text-align: right;
+}
+
+/* Ajoutez d'autres styles RTL nécessaires */

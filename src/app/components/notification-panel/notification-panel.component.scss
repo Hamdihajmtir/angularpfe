@@ -1,0 +1,226 @@
+.notification-container {
+    position: relative;
+    margin-left: 20px;
+
+    .notification-trigger {
+        position: relative;
+        color: #666;
+        font-size: 1.5rem;
+        padding: 8px;
+        border-radius: 50%;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+
+        &:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+            color: #333;
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: #ff4757;
+            color: white;
+            border-radius: 50%;
+            padding: 2px 6px;
+            font-size: 0.7rem;
+            min-width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            animation: pulse 2s infinite;
+        }
+    }
+
+    .notification-dropdown {
+        position: absolute;
+        top: 100%;
+        right: 0;
+        width: 350px;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(10px);
+        transition: all 0.3s ease;
+        z-index: 1000;
+        max-height: 80vh;
+        display: flex;
+        flex-direction: column;
+
+        &.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .notification-header {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+
+            h3 {
+                margin: 0;
+                font-size: 1.1rem;
+                color: #333;
+                font-weight: 600;
+            }
+
+            .notification-actions {
+                display: flex;
+                gap: 10px;
+
+                .action-btn {
+                    background: none;
+                    border: none;
+                    color: #666;
+                    padding: 5px;
+                    cursor: pointer;
+                    border-radius: 4px;
+                    display: flex;
+                    align-items: center;
+                    gap: 5px;
+                    font-size: 0.9rem;
+                    transition: all 0.2s ease;
+
+                    &:hover {
+                        background-color: rgba(0, 0, 0, 0.05);
+                        color: #333;
+                    }
+
+                    fa-icon {
+                        font-size: 1rem;
+                    }
+                }
+            }
+        }
+
+        .notification-list {
+            overflow-y: auto;
+            max-height: calc(80vh - 60px);
+
+            .notification-item {
+                display: flex;
+                align-items: flex-start;
+                padding: 15px;
+                border-bottom: 1px solid #eee;
+                transition: all 0.2s ease;
+                gap: 12px;
+
+                &:hover {
+                    background-color: rgba(0, 0, 0, 0.02);
+                }
+
+                &.unread {
+                    background-color: rgba(0, 123, 255, 0.05);
+
+                    .notification-title {
+                        font-weight: 600;
+                    }
+                }
+
+                .notification-icon {
+                    width: 36px;
+                    height: 36px;
+                    border-radius: 8px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    flex-shrink: 0;
+                    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+
+                    fa-icon {
+                        font-size: 1.2rem;
+                    }
+                }
+
+                .notification-content {
+                    flex: 1;
+                    min-width: 0;
+
+                    .notification-title {
+                        font-size: 0.95rem;
+                        margin-bottom: 4px;
+                        font-weight: 600;
+                    }
+
+                    .notification-message {
+                        font-size: 0.85rem;
+                        color: #666;
+                        margin-bottom: 4px;
+                    }
+
+                    .notification-time {
+                        font-size: 0.75rem;
+                        color: #999;
+                    }
+                }
+
+                .notification-actions {
+                    display: flex;
+                    gap: 5px;
+
+                    .action-btn {
+                        background: none;
+                        border: none;
+                        color: #666;
+                        padding: 5px;
+                        cursor: pointer;
+                        border-radius: 4px;
+                        transition: all 0.2s ease;
+
+                        &:hover {
+                            background-color: rgba(0, 0, 0, 0.05);
+                            color: #333;
+                        }
+
+                        &.delete:hover {
+                            color: #ff4757;
+                            background-color: rgba(255, 71, 87, 0.1);
+                        }
+                    }
+                }
+            }
+        }
+
+        .notification-empty {
+            padding: 40px 20px;
+            text-align: center;
+            color: #999;
+
+            fa-icon {
+                font-size: 2rem;
+                margin-bottom: 10px;
+                opacity: 0.5;
+            }
+
+            p {
+                margin: 0;
+                font-size: 0.9rem;
+            }
+        }
+    }
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+    100% {
+        transform: scale(1);
+    }
+} 

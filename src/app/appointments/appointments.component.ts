@@ -3,6 +3,7 @@ import { CommonModule, DatePipe } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormBuilder, Validators, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { FirebaseService } from '../services/firebase.service';
+import { TranslatePipe } from '../pipes/translate.pipe';
 
 // Interface Appointment
 interface Appointment {
@@ -30,7 +31,7 @@ interface Patient {
 @Component({
   selector: 'app-appointments',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, DatePipe],
+  imports: [CommonModule, ReactiveFormsModule, DatePipe, TranslatePipe],
   templateUrl: './appointments.component.html',
   styleUrl: './appointments.component.css'
 })
@@ -41,6 +42,7 @@ export class AppointmentsComponent implements OnInit {
   calendarView: 'month' | 'week' | 'day' = 'month';
   selectedDate: Date = new Date();
   selectedDay: string = '';
+  today: Date = new Date();
   
   // Propriétés pour les données
   patients: Patient[] = [];
@@ -65,6 +67,9 @@ export class AppointmentsComponent implements OnInit {
       description: [''],
       status: ['confirmed']
     });
+    
+    // Initialiser la date d'aujourd'hui
+    this.today.setHours(0, 0, 0, 0);
   }
   
   ngOnInit() {
@@ -121,17 +126,23 @@ export class AppointmentsComponent implements OnInit {
     const firstDayOfWeek = firstDay.getDay() === 0 ? 7 : firstDay.getDay(); // Lundi = 1, Dimanche = 7
     const daysFromPrevMonth = firstDayOfWeek - 1;
     
+    // Date d'aujourd'hui pour la comparaison
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
     // Ajouter les jours du mois précédent
     if (daysFromPrevMonth > 0) {
       const prevMonth = new Date(this.selectedDate.getFullYear(), this.selectedDate.getMonth(), 0);
       for (let i = daysFromPrevMonth - 1; i >= 0; i--) {
         const day = prevMonth.getDate() - i;
+        const date = new Date(prevMonth.getFullYear(), prevMonth.getMonth(), day);
         this.calendarDays.push({
           day: day,
           month: prevMonth.getMonth(),
           year: prevMonth.getFullYear(),
           isCurrentMonth: false,
           isToday: this.isToday(day, prevMonth.getMonth(), prevMonth.getFullYear()),
+          isPast: date < today,
           appointments: this.getAppointmentsForDay(day, prevMonth.getMonth(), prevMonth.getFullYear())
         });
       }
@@ -139,12 +150,14 @@ export class AppointmentsComponent implements OnInit {
     
     // Ajouter les jours du mois actuel
     for (let day = 1; day <= lastDay.getDate(); day++) {
+      const date = new Date(this.selectedDate.getFullYear(), this.selectedDate.getMonth(), day);
       this.calendarDays.push({
         day: day,
         month: this.selectedDate.getMonth(),
         year: this.selectedDate.getFullYear(),
         isCurrentMonth: true,
         isToday: this.isToday(day, this.selectedDate.getMonth(), this.selectedDate.getFullYear()),
+        isPast: date < today,
         appointments: this.getAppointmentsForDay(day, this.selectedDate.getMonth(), this.selectedDate.getFullYear())
       });
     }
@@ -155,12 +168,14 @@ export class AppointmentsComponent implements OnInit {
     if (remainingDays > 0) {
       const nextMonth = new Date(this.selectedDate.getFullYear(), this.selectedDate.getMonth() + 1, 1);
       for (let day = 1; day <= remainingDays; day++) {
+        const date = new Date(nextMonth.getFullYear(), nextMonth.getMonth(), day);
         this.calendarDays.push({
           day: day,
           month: nextMonth.getMonth(),
           year: nextMonth.getFullYear(),
           isCurrentMonth: false,
           isToday: this.isToday(day, nextMonth.getMonth(), nextMonth.getFullYear()),
+          isPast: date < today,
           appointments: this.getAppointmentsForDay(day, nextMonth.getMonth(), nextMonth.getFullYear())
         });
       }
@@ -263,6 +278,8 @@ export class AppointmentsComponent implements OnInit {
         this.appointments = Object.values(appointmentsResult.rendezvous).map((rdv: any) => ({
           id: rdv.id,
           patientId: rdv.patientId,
+          patientNom: rdv.patientNom || '',
+          patientPrenom: rdv.patientPrenom || '',
           title: rdv.title || 'Rendez-vous',
           date: new Date(rdv.date),
           startTime: rdv.heure.split('-')[0].trim(),
@@ -282,10 +299,48 @@ export class AppointmentsComponent implements OnInit {
   
   openAppointmentForm(day: number, month: number, year: number) {
     const date = new Date(year, month, day);
+    
+    // Vérifier si la date est dans le passé
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    if (date < today) {
+      alert('Vous ne pouvez pas créer de rendez-vous sur une date déjà passée.');
+      return;
+    }
+    
+    // Définir l'heure de début par défaut en fonction de l'heure actuelle
+    let defaultStartTime = '09:00';
+    let defaultEndTime = '09:30';
+    
+    // Si la date est aujourd'hui, définir l'heure de début à la prochaine demi-heure disponible
+    if (date.getDate() === today.getDate() && 
+        date.getMonth() === today.getMonth() && 
+        date.getFullYear() === today.getFullYear()) {
+      
+      const currentHour = today.getHours();
+      const currentMinute = today.getMinutes();
+      
+      // Arrondir à la prochaine demi-heure
+      if (currentMinute < 30) {
+        defaultStartTime = `${currentHour.toString().padStart(2, '0')}:30`;
+        defaultEndTime = `${(currentHour + 1).toString().padStart(2, '0')}:00`;
+      } else {
+        defaultStartTime = `${(currentHour + 1).toString().padStart(2, '0')}:00`;
+        defaultEndTime = `${(currentHour + 1).toString().padStart(2, '0')}:30`;
+      }
+      
+      // Vérifier si l'heure de début est après 17:30
+      if (defaultStartTime > '17:30') {
+        alert('Vous ne pouvez pas créer de rendez-vous après 17:30.');
+        return;
+      }
+    }
+    
     this.appointmentForm.patchValue({
       date: this.formatDate(date),
-      startTime: '09:00',
-      endTime: '09:30'
+      startTime: defaultStartTime,
+      endTime: defaultEndTime
     });
     this.showAppointmentForm = true;
   }
@@ -306,6 +361,38 @@ export class AppointmentsComponent implements OnInit {
   async saveAppointment() {
     if (this.appointmentForm.valid) {
       const formData = this.appointmentForm.value;
+      
+      // Vérifier si la date est dans le passé
+      const appointmentDate = new Date(formData.date);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      if (appointmentDate < today) {
+        alert('Vous ne pouvez pas créer de rendez-vous sur une date déjà passée.');
+        return;
+      }
+      
+      // Vérifier si l'heure de fin est après 17:30
+      if (formData.endTime > '17:30') {
+        alert('Vous ne pouvez pas créer de rendez-vous après 17:30.');
+        return;
+      }
+      
+      // Si la date est aujourd'hui, vérifier si l'heure de début est déjà passée
+      if (appointmentDate.getDate() === today.getDate() && 
+          appointmentDate.getMonth() === today.getMonth() && 
+          appointmentDate.getFullYear() === today.getFullYear()) {
+        
+        const currentHour = today.getHours().toString().padStart(2, '0');
+        const currentMinute = today.getMinutes().toString().padStart(2, '0');
+        const currentTime = `${currentHour}:${currentMinute}`;
+        
+        if (formData.startTime < currentTime) {
+          alert('Vous ne pouvez pas créer de rendez-vous à une heure déjà passée.');
+          return;
+        }
+      }
+      
       const currentUser = this.firebaseService.getCurrentUser();
       
       if (!currentUser) {
@@ -313,12 +400,18 @@ export class AppointmentsComponent implements OnInit {
         return;
       }
       
+      // Récupérer les informations du patient sélectionné
+      const selectedPatient = this.patients.find(p => p.id === formData.patientId);
+      
       const rendezvousData = {
         date: formData.date,
         heure: `${formData.startTime} - ${formData.endTime}`,
-        description: formData.description,
-        title: formData.title,
-        status: formData.status
+        description: formData.description || '',
+        title: formData.title || 'Rendez-vous',
+        status: formData.status || 'pending',
+        // Ajouter les informations du patient pour référence
+        patientNom: selectedPatient ? selectedPatient.nom : '',
+        patientPrenom: selectedPatient ? selectedPatient.prenom : ''
       };
       
       let result;
@@ -433,11 +526,34 @@ export class AppointmentsComponent implements OnInit {
   
   // Méthode pour obtenir les heures disponibles pour le début d'un RDV
   getAvailableHours(): string[] {
-    return [
+    const hours = [
       '08:00', '08:30', '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
       '12:00', '12:30', '13:00', '13:30', '14:00', '14:30', '15:00', '15:30',
       '16:00', '16:30', '17:00', '17:30'
     ];
+    
+    // Si la date sélectionnée est aujourd'hui, filtrer les heures déjà passées
+    const selectedDate = this.appointmentForm.get('date')?.value;
+    if (selectedDate) {
+      const today = new Date();
+      const selected = new Date(selectedDate);
+      
+      // Vérifier si la date sélectionnée est aujourd'hui
+      if (selected.getDate() === today.getDate() && 
+          selected.getMonth() === today.getMonth() && 
+          selected.getFullYear() === today.getFullYear()) {
+        
+        // Obtenir l'heure actuelle au format HH:MM
+        const currentHour = today.getHours().toString().padStart(2, '0');
+        const currentMinute = today.getMinutes().toString().padStart(2, '0');
+        const currentTime = `${currentHour}:${currentMinute}`;
+        
+        // Filtrer les heures déjà passées
+        return hours.filter(hour => hour > currentTime);
+      }
+    }
+    
+    return hours;
   }
   
   // Méthode pour obtenir les heures disponibles pour la fin d'un RDV

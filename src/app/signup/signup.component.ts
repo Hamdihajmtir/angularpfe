@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidationErrors } from '@angular/forms';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { 
   faUserDoctor, 
@@ -39,13 +39,72 @@ export class SignupComponent implements OnInit {
 
   ngOnInit() {
     this.signupForm = this.fb.group({
-      nom: ['', Validators.required],
-      prenom: ['', Validators.required],
-      email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(6)]],
-      confirmPassword: ['', Validators.required],
-      terms: [false, Validators.requiredTrue]
+      nom: ['', [Validators.required, this.nameValidator()]],
+      prenom: ['', [Validators.required, this.nameValidator()]],
+      email: ['', [Validators.required, Validators.email, this.emailValidator()]],
+      password: ['', [
+        Validators.required,
+        Validators.minLength(8),
+        this.passwordValidator()
+      ]],
+      confirmPassword: ['', Validators.required]
     }, { validator: this.checkPasswords });
+  }
+
+  // Validation personnalisée pour les noms (première lettre majuscule, reste en minuscules)
+  nameValidator() {
+    return (control: AbstractControl): ValidationErrors | null => {
+      const value = control.value;
+      if (!value) return null;
+
+      const nameRegex = /^[A-Z][a-z]+$/;
+      if (!nameRegex.test(value)) {
+        return {
+          invalidName: true,
+          message: 'Le nom doit commencer par une majuscule et ne contenir que des lettres'
+        };
+      }
+      return null;
+    };
+  }
+
+  // Validation personnalisée pour l'email
+  emailValidator() {
+    return (control: AbstractControl): ValidationErrors | null => {
+      const value = control.value;
+      if (!value) return null;
+
+      if (!value.includes('@')) {
+        return {
+          invalidEmail: true,
+          message: "L'email doit contenir le caractère @"
+        };
+      }
+      return null;
+    };
+  }
+
+  // Validation personnalisée pour le mot de passe
+  passwordValidator() {
+    return (control: AbstractControl): ValidationErrors | null => {
+      const value = control.value;
+      if (!value) return null;
+
+      const hasUpperCase = /[A-Z]/.test(value);
+      const hasLowerCase = /[a-z]/.test(value);
+      const hasNumbers = /\d/.test(value);
+      const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(value);
+
+      const passwordValid = hasUpperCase && hasLowerCase && hasNumbers && hasSpecialChar;
+
+      if (!passwordValid) {
+        return {
+          invalidPassword: true,
+          message: 'Le mot de passe doit contenir au moins une majuscule, une minuscule, un chiffre et un caractère spécial'
+        };
+      }
+      return null;
+    };
   }
 
   // Validation personnalisée pour vérifier que les mots de passe correspondent
@@ -53,7 +112,6 @@ export class SignupComponent implements OnInit {
     const passwordControl = group.get('password');
     const confirmPasswordControl = group.get('confirmPassword');
     
-    // Vérifier que les contrôles existent avant d'accéder à leurs valeurs
     if (!passwordControl || !confirmPasswordControl) {
       return null;
     }
@@ -96,5 +154,9 @@ export class SignupComponent implements OnInit {
 
   goToLogin() {
     this.router.navigate(['/login']);
+  }
+
+  goBack() {
+    this.router.navigate(['/dashboard-admin']);
   }
 }

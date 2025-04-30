@@ -1,9 +1,9 @@
 <div class="signup-container">
   <div class="signup-card">
     <div class="signup-header">
-      <fa-icon [icon]="faUserDoctor" style="font-size: 80px; color: #1E5F74;"></fa-icon>
-      <h1>CardioTrack</h1>
-      <p>Créer un compte</p>
+      <fa-icon [icon]="faUserDoctor" style="font-size: 60px; color: #1E5F74;"></fa-icon>
+      <h1>Ajouter un médecin</h1>
+      <p>Créez un compte pour un nouveau médecin</p>
     </div>
     
     <form [formGroup]="signupForm" (ngSubmit)="onSubmit()">
@@ -15,11 +15,14 @@
           type="text" 
           id="nom" 
           formControlName="nom" 
-          placeholder="Entrez votre nom"
+          placeholder="Entrez le nom du médecin"
           [class.is-invalid]="signupForm.get('nom')?.invalid && signupForm.get('nom')?.touched"
         >
         <div class="error-message" *ngIf="signupForm.get('nom')?.invalid && signupForm.get('nom')?.touched">
           <small *ngIf="signupForm.get('nom')?.errors?.['required']">Nom requis</small>
+          <small *ngIf="signupForm.get('nom')?.errors?.['invalidName']">
+            {{ signupForm.get('nom')?.errors?.['message'] }}
+          </small>
         </div>
       </div>
       
@@ -31,11 +34,14 @@
           type="text" 
           id="prenom" 
           formControlName="prenom" 
-          placeholder="Entrez votre prénom"
+          placeholder="Entrez le prénom du médecin"
           [class.is-invalid]="signupForm.get('prenom')?.invalid && signupForm.get('prenom')?.touched"
         >
         <div class="error-message" *ngIf="signupForm.get('prenom')?.invalid && signupForm.get('prenom')?.touched">
           <small *ngIf="signupForm.get('prenom')?.errors?.['required']">Prénom requis</small>
+          <small *ngIf="signupForm.get('prenom')?.errors?.['invalidName']">
+            {{ signupForm.get('prenom')?.errors?.['message'] }}
+          </small>
         </div>
       </div>
       
@@ -47,12 +53,15 @@
           type="email" 
           id="email" 
           formControlName="email" 
-          placeholder="Entrez votre email"
+          placeholder="Entrez l'email du médecin"
           [class.is-invalid]="signupForm.get('email')?.invalid && signupForm.get('email')?.touched"
         >
         <div class="error-message" *ngIf="signupForm.get('email')?.invalid && signupForm.get('email')?.touched">
           <small *ngIf="signupForm.get('email')?.errors?.['required']">Email requis</small>
           <small *ngIf="signupForm.get('email')?.errors?.['email']">Format d'email invalide</small>
+          <small *ngIf="signupForm.get('email')?.errors?.['invalidEmail']">
+            {{ signupForm.get('email')?.errors?.['message'] }}
+          </small>
         </div>
       </div>
       
@@ -64,12 +73,15 @@
           type="password" 
           id="password" 
           formControlName="password" 
-          placeholder="Entrez votre mot de passe"
+          placeholder="Entrez le mot de passe"
           [class.is-invalid]="signupForm.get('password')?.invalid && signupForm.get('password')?.touched"
         >
         <div class="error-message" *ngIf="signupForm.get('password')?.invalid && signupForm.get('password')?.touched">
           <small *ngIf="signupForm.get('password')?.errors?.['required']">Mot de passe requis</small>
-          <small *ngIf="signupForm.get('password')?.errors?.['minlength']">Le mot de passe doit contenir au moins 6 caractères</small>
+          <small *ngIf="signupForm.get('password')?.errors?.['minlength']">Le mot de passe doit contenir au moins 8 caractères</small>
+          <small *ngIf="signupForm.get('password')?.errors?.['invalidPassword']">
+            {{ signupForm.get('password')?.errors?.['message'] }}
+          </small>
         </div>
       </div>
       
@@ -81,7 +93,7 @@
           type="password" 
           id="confirmPassword" 
           formControlName="confirmPassword" 
-          placeholder="Confirmez votre mot de passe"
+          placeholder="Confirmez le mot de passe"
           [class.is-invalid]="signupForm.get('confirmPassword')?.invalid && signupForm.get('confirmPassword')?.touched"
         >
         <div class="error-message" *ngIf="signupForm.get('confirmPassword')?.invalid && signupForm.get('confirmPassword')?.touched">
@@ -92,24 +104,18 @@
         </div>
       </div>
       
-      <div class="form-group terms">
-        <input type="checkbox" id="terms" formControlName="terms">
-        <label for="terms">J'accepte les <a href="#">conditions d'utilisation</a> et la <a href="#">politique de confidentialité</a></label>
-      </div>
-      
       <!-- Affichage des erreurs d'inscription -->
       <div class="error-message" *ngIf="errorMessage">
         {{ errorMessage }}
       </div>
       
-      <button type="submit" class="btn-signup" [disabled]="signupForm.invalid || isLoading">
-        <fa-icon [icon]="faUserPlus"></fa-icon> 
-        <span *ngIf="!isLoading">S'inscrire</span>
-        <span *ngIf="isLoading">Chargement...</span>
-      </button>
-      
-      <div class="login-link">
-        <p>Déjà inscrit? <a (click)="goToLogin()">Se connecter</a></p>
+      <div class="form-actions">
+        <button type="button" class="btn-secondary" (click)="goBack()">Annuler</button>
+        <button type="submit" class="btn-primary" [disabled]="signupForm.invalid || isLoading">
+          <fa-icon [icon]="faUserPlus"></fa-icon> 
+          <span *ngIf="!isLoading">Ajouter le médecin</span>
+          <span *ngIf="isLoading">Chargement...</span>
+        </button>
       </div>
     </form>
   </div>

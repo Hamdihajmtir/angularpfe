@@ -1,4 +1,3 @@
-
 /* Conteneur principal */
 .calendar-container {
   background-color: white;
@@ -115,6 +114,17 @@
 .day.other-month {
   background-color: #f8f9fa;
   color: #adb5bd;
+  opacity: 0.5;
+}
+
+.day.past-day {
+  opacity: 0.5;
+  background-color: #f5f5f5;
+  cursor: not-allowed;
+}
+
+.day.past-day:hover {
+  background-color: #f5f5f5;
 }
 
 .day-number {
@@ -297,6 +307,12 @@
   color: white;
 }
 
+.week-date.past-day {
+  opacity: 0.5;
+  background-color: #f5f5f5;
+  color: #999;
+}
+
 .week-body {
   display: flex;
   flex-direction: column;
@@ -321,6 +337,12 @@
   border-right: 1px solid grey-color;
   padding: 0.25rem;
   position: relative;
+}
+
+.week-day-slot.past-day {
+  opacity: 0.5;
+  background-color: #f5f5f5;
+  cursor: not-allowed;
 }
 
 .week-appointment {
@@ -389,6 +411,12 @@
 .day-hour-slot {
   padding: 0.5rem;
   position: relative;
+}
+
+.day-hour-slot.past-day {
+  opacity: 0.5;
+  background-color: #f5f5f5;
+  cursor: not-allowed;
 }
 
 .day-appointment {

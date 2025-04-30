@@ -1,4 +1,20 @@
 <div class="brand">
   <i class='bx bx-b'></i>
   <span class="text">Nom de l'application</span>
+</div>
+
+<div class="sidebar">
+  <div class="sidebar-header">
+    <img src="assets/images/logo.png" alt="Logo">
+    <h2>{{ 'appName' | translate }}</h2>
+  </div>
+  
+  <ul class="sidebar-menu">
+    <li *ngFor="let item of menuItems" [routerLinkActive]="'active'">
+      <a [routerLink]="item.path">
+        <i class="bx {{ item.icon }}"></i>
+        <span>{{ item.label | translate }}</span>
+      </a>
+    </li>
+  </ul>
 </div> 

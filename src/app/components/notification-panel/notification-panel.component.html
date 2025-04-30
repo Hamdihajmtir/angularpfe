@@ -1,0 +1,51 @@
+<div class="notification-container">
+    <a href="#" class="notification-trigger" (click)="toggleNotificationMenu($event)">
+        <fa-icon [icon]="faBell"></fa-icon>
+        <span class="notification-badge" *ngIf="unreadCount > 0">{{ unreadCount }}</span>
+    </a>
+    
+    <div class="notification-dropdown" [class.show]="isOpen" [@slideInOut]>
+        <div class="notification-header">
+            <h3>Notifications</h3>
+            <div class="notification-actions">
+                <button class="action-btn" (click)="markAllAsRead()" *ngIf="unreadCount > 0">
+                    <fa-icon [icon]="faCheck"></fa-icon>
+                    <span>Marquer tout comme lu</span>
+                </button>
+                <button class="action-btn" (click)="clearAll()" *ngIf="notifications.length > 0">
+                    <fa-icon [icon]="faTimes"></fa-icon>
+                    <span>Effacer tout</span>
+                </button>
+            </div>
+        </div>
+        
+        <div class="notification-list" *ngIf="notifications.length > 0">
+            <div class="notification-item" 
+                 *ngFor="let notification of notifications" 
+                 [class.unread]="!notification.read"
+                 [@notificationItem]>
+                <div class="notification-icon" [ngStyle]="{'background-color': getColorForType(notification.type) + '20', 'color': getColorForType(notification.type)}">
+                    <fa-icon [icon]="getIconForType(notification.type)"></fa-icon>
+                </div>
+                <div class="notification-content">
+                    <div class="notification-title" [ngStyle]="{'color': getColorForType(notification.type)}">{{ notification.title }}</div>
+                    <div class="notification-message">{{ notification.message }}</div>
+                    <div class="notification-time">{{ notification.timestamp | date:'short' }}</div>
+                </div>
+                <div class="notification-actions">
+                    <button class="action-btn" (click)="markAsRead(notification)" *ngIf="!notification.read">
+                        <fa-icon [icon]="faCheck"></fa-icon>
+                    </button>
+                    <button class="action-btn delete" (click)="removeNotification(notification)">
+                        <fa-icon [icon]="faTimes"></fa-icon>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="notification-empty" *ngIf="notifications.length === 0">
+            <fa-icon [icon]="faBell"></fa-icon>
+            <p>Aucune notification</p>
+        </div>
+    </div>
+</div> 
