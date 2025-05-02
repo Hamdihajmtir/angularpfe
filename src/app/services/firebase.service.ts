@@ -7,7 +7,9 @@ import {
   signOut,
   updatePassword,
   EmailAuthProvider,
-  reauthenticateWithCredential
+  reauthenticateWithCredential,
+  deleteUser,
+  sendEmailVerification
 } from 'firebase/auth';
 import { 
   getDatabase, 
@@ -71,14 +73,21 @@ export class FirebaseService {
       const userCredential = await createUserWithEmailAndPassword(this.auth, email, password);
       const user = userCredential.user;
       
+      // Envoyer l'email de vérification
+      await sendEmailVerification(user);
+      
       // Ajouter les données du médecin dans Realtime Database
-      await set(ref(this.db, 'medecins/' + user.uid), {
+      const doctorData = {
+        email: userData.email,
         nom: userData.nom,
         prenom: userData.prenom,
-        email: userData.email,
+        etat: 2, // État initial à 2 (en attente)
+        patients: {},
         uid: user.uid,
-        patients: {}
-      });
+        emailVerified: false
+      };
+      
+      await set(ref(this.db, 'medecins/' + user.uid), doctorData);
       
       return { success: true, user };
     } catch (error: any) {
@@ -93,18 +102,44 @@ export class FirebaseService {
       const userCredential = await signInWithEmailAndPassword(this.auth, email, password);
       const user = userCredential.user;
       
+      // Vérifier si l'email est vérifié
+      if (!user.emailVerified) {
+        await signOut(this.auth);
+        return { 
+          success: false, 
+          error: "Veuillez vérifier votre email avant de vous connecter. Un email de vérification a été envoyé à votre adresse." 
+        };
+      }
+      
       // Récupérer les données complètes du médecin
       const snapshot = await get(child(ref(this.db), `medecins/${user.uid}`));
       
       if (snapshot.exists()) {
         const userData = snapshot.val();
-        // Stocker les données utilisateur en local
-        localStorage.setItem('user', JSON.stringify(userData));
-        this.user.next(userData);
-        return { success: true, user: userData };
-      } else {
-        throw new Error("Données utilisateur non trouvées");
+        
+        // Vérifier l'état d'approbation par l'admin
+        if (userData.etat === 1) {
+          await signOut(this.auth);
+          return { 
+            success: false, 
+            error: "Votre compte a été refusé par l'administrateur. Veuillez contacter l'administrateur pour plus d'informations." 
+          };
+        }
+        
+        if (userData.etat === 0) {
+          // Stocker les données utilisateur en local
+          localStorage.setItem('user', JSON.stringify(userData));
+          this.user.next(userData);
+          return { success: true, user: userData };
+        } else if (userData.etat === 2) {
+          await signOut(this.auth);
+          return { 
+            success: false, 
+            error: "Votre compte est en attente d'approbation par l'administrateur. Vous serez notifié par email une fois votre compte approuvé." 
+          };
+        }
       }
+      return { success: false, error: "Données utilisateur non trouvées" };
     } catch (error: any) {
       console.error("Erreur de connexion:", error);
       return { success: false, error: error.message };
@@ -119,6 +154,24 @@ export class FirebaseService {
       this.user.next(null);
       return { success: true };
     } catch (error: any) {
+      return { success: false, error: error.message };
+    }
+  }
+
+  // Vérifier l'état d'un bracelet
+  async checkBraceletState(braceletCode: string) {
+    try {
+      const snapshot = await get(child(ref(this.db), `Mesures/${braceletCode}`));
+      if (snapshot.exists()) {
+        const braceletData = snapshot.val();
+        // Convertir l'état en nombre pour la comparaison
+        const etat = parseInt(braceletData.etat);
+        return { success: true, isActive: etat === 1 };
+      } else {
+        return { success: true, isActive: false };
+      }
+    } catch (error: any) {
+      console.error("Erreur lors de la vérification de l'état du bracelet:", error);
       return { success: false, error: error.message };
     }
   }
@@ -169,6 +222,16 @@ export class FirebaseService {
         }
       }
 
+      // Vérifier l'état du bracelet
+      const braceletCheck = await this.checkBraceletState(patientData.braceletCode);
+      if (!braceletCheck.success) {
+        return { success: false, error: "Erreur lors de la vérification du bracelet" };
+      }
+      
+      if (braceletCheck.isActive) {
+        return { success: false, error: "Le bracelet est déjà utilisé par un autre patient" };
+      }
+
       const patientId = new Date().getTime().toString(); // Génère un ID unique basé sur le timestamp
       await set(ref(this.db, `medecins/${doctorId}/patients/${patientId}`), {
         id: patientId,
@@ -182,6 +245,10 @@ export class FirebaseService {
         imageUrl: patientData.imageUrl || '',
         dateCreation: new Date().toISOString()
       });
+
+      // Activer le bracelet après l'ajout du patient
+      await set(ref(this.db, `Mesures/${patientData.braceletCode}/etat`), 1);
+
       return { success: true, patientId };
     } catch (error: any) {
       console.error("Erreur lors de l'ajout du patient:", error);
@@ -556,12 +623,18 @@ export class FirebaseService {
       const userCredential = await createUserWithEmailAndPassword(this.auth, email, password);
       const user = userCredential.user;
       
-      await set(ref(this.db, 'admins/' + user.uid), {
-        nom: userData.nom,
-        prenom: userData.prenom,
-        email: userData.email,
-        uid: user.uid
-      });
+      // Créer un objet complet avec toutes les propriétés nécessaires
+      const adminData = {
+        nom: userData.lastName || '',
+        prenom: userData.firstName || '',
+        email: email,
+        phone: userData.phone || '',
+        uid: user.uid,
+        role: 'admin',
+        dateCreation: new Date().toISOString()
+      };
+      
+      await set(ref(this.db, 'admins/' + user.uid), adminData);
       
       return { success: true, user }; 
     } catch (error: any) {
@@ -606,7 +679,12 @@ export class FirebaseService {
   // Supprimer un médecin
   async deleteDoctor(doctorId: string) {
     try {
+      // Supprimer le compte d'authentification
+      await deleteUser(this.auth.currentUser!);
+      
+      // Supprimer les données du médecin dans la base de données
       await set(ref(this.db, `medecins/${doctorId}`), null);
+      
       return { success: true };
     } catch (error: any) {
       console.error("Erreur lors de la suppression du médecin:", error);
@@ -853,6 +931,126 @@ export class FirebaseService {
     } catch (error: any) {
       console.error("Erreur lors de la vérification du médecin:", error);
       return false;
+    }
+  }
+
+  // Récupérer tous les bracelets (clés sous 'Mesures')
+  async getAllBracelets() {
+    try {
+      const snapshot = await get(ref(this.db, 'Mesures'));
+      if (snapshot.exists()) {
+        return { success: true, bracelets: snapshot.val() };
+      } else {
+        return { success: true, bracelets: {} };
+      }
+    } catch (error: any) {
+      console.error('Erreur lors de la récupération des bracelets:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  // Activer un bracelet (etat = 1)
+  async activateBracelet(braceletId: string) {
+    try {
+      await set(ref(this.db, `Mesures/${braceletId}/etat`), 1);
+      return { success: true };
+    } catch (error: any) {
+      console.error('Erreur lors de l\'activation du bracelet:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  // Désactiver un bracelet (etat = 0)
+  async deactivateBracelet(braceletId: string) {
+    try {
+      await set(ref(this.db, `Mesures/${braceletId}/etat`), 0);
+      return { success: true };
+    } catch (error: any) {
+      console.error('Erreur lors de la désactivation du bracelet:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  // Réinitialiser un bracelet (supprimer le champ code)
+  async resetBracelet(braceletId: string) {
+    try {
+      await set(ref(this.db, `Mesures/${braceletId}`), null);
+      return { success: true };
+    } catch (error: any) {
+      console.error('Erreur lors de la réinitialisation du bracelet:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  // Récupérer les patients du médecin connecté
+  async getCurrentDoctorPatients() {
+    try {
+      const currentUser = this.user.getValue();
+      if (!currentUser) {
+        return { success: false, error: 'Aucun utilisateur connecté' };
+      }
+
+      const snapshot = await get(child(ref(this.db), `medecins/${currentUser.uid}/patients`));
+      if (snapshot.exists()) {
+        return { success: true, patients: snapshot.val() };
+      } else {
+        return { success: true, patients: {} };
+      }
+    } catch (error: any) {
+      console.error("Erreur lors de la récupération des patients:", error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  // Accepter un médecin (état = 0)
+  async acceptDoctor(doctorId: string) {
+    try {
+      // Récupérer les données actuelles du médecin
+      const snapshot = await get(child(ref(this.db), `medecins/${doctorId}`));
+      if (!snapshot.exists()) {
+        return { success: false, error: 'Médecin non trouvé' };
+      }
+      
+      const doctorData = snapshot.val();
+      
+      // Pour les médecins créés par l'application mobile, on utilise directement le doctorId comme uid
+      const updatedData = {
+        ...doctorData,
+        etat: 0,
+        uid: doctorData.uid || doctorId // Utiliser l'uid existant ou le doctorId comme uid
+      };
+      
+      await set(ref(this.db, `medecins/${doctorId}`), updatedData);
+      return { success: true };
+    } catch (error: any) {
+      console.error('Erreur lors de l\'acceptation du médecin:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  // Refuser un médecin (état = 1)
+  async refuseDoctor(doctorId: string) {
+    try {
+      // Récupérer les données actuelles du médecin
+      const snapshot = await get(child(ref(this.db), `medecins/${doctorId}`));
+      if (!snapshot.exists()) {
+        return { success: false, error: 'Médecin non trouvé' };
+      }
+      
+      const doctorData = snapshot.val();
+      
+      // Pour les médecins créés par l'application mobile, on utilise directement le doctorId comme uid
+      const updatedData = {
+        ...doctorData,
+        etat: 1,
+        uid: doctorData.uid || doctorId // Utiliser l'uid existant ou le doctorId comme uid
+      };
+      
+      await set(ref(this.db, `medecins/${doctorId}`), updatedData);
+      return { success: true };
+    } catch (error: any) {
+      console.error('Erreur lors du refus du médecin:', error);
+      return { success: false, error: error.message };
     }
   }
 } 

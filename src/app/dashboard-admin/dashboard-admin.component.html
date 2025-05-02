@@ -3,7 +3,7 @@
   <div class="sidebar">
     <div class="sidebar-header">
       <fa-icon [icon]="faUserShield" class="admin-icon"></fa-icon>
-      <h2 style="color: #fff;">CardioTrack Admin</h2>
+      <h2>CardioTrack Admin</h2>
     </div>
     
     <div class="sidebar-menu">
@@ -11,10 +11,10 @@
         <fa-icon [icon]="faUserMd"></fa-icon>
         <span>Médecins</span>
       </div>
-      <div class="menu-item" [class.active]="router.url.includes('ajouter-medecin')" routerLink="/dashboard-admin/ajouter-medecin">
+      <!-- <div class="menu-item" [class.active]="router.url.includes('ajouter-medecin')" routerLink="/dashboard-admin/ajouter-medecin">
         <fa-icon [icon]="faUserPlus"></fa-icon>
         <span>Ajouter médecin</span>
-      </div>
+      </div> -->
       <div class="menu-item" [class.active]="router.url.includes('generate-secretaire')" routerLink="/dashboard-admin/generate-secretaire">
         <fa-icon [icon]="faUserPlus"></fa-icon>
         <span>Ajouter infirmière</span>
@@ -23,7 +23,6 @@
         <fa-icon [icon]="faCog"></fa-icon>
         <span>Paramètres</span>
       </div>
-
     </div>
 
     <div class="sidebar-footer">
@@ -37,7 +36,7 @@
   <!-- Main Content -->
   <div class="main-content">
     <div class="content-header">
-      <h1>Tableau de bord Administrateur</h1>
+      <h1>Gestion des Médecins</h1>
       <div class="stats-container">
         <div class="stat-card">
           <fa-icon [icon]="faUserMd"></fa-icon>
@@ -49,7 +48,7 @@
       </div>
     </div>
 
-    <!-- Doctors List - Only show when not on generate-secretaire, parametre or ajouter-medecin route -->
+    <!-- Doctors List -->
     <div class="doctors-container" *ngIf="!router.url.includes('generate-secretaire') && !router.url.includes('parametre') && !router.url.includes('ajouter-medecin')">
       <div *ngIf="loading" class="loading-spinner">
         Chargement des données...
@@ -62,10 +61,12 @@
       <div *ngIf="!loading && !error" class="doctors-grid">
         <div *ngFor="let doctor of getDoctors()" class="doctor-card">
           <div class="doctor-header">
-            <fa-icon [icon]="faUserMd" class="doctor-icon"></fa-icon>
-            <h3>Dr. {{ doctor.prenom }} {{ doctor.nom }}</h3>
+            <div class="doctor-identity">
+              <fa-icon [icon]="faUserMd" class="doctor-icon"></fa-icon>
+              <h3>Dr. {{ doctor.prenom }} {{ doctor.nom }}</h3>
+            </div>
             <div class="doctor-actions">
-              <button class="edit-btn" (click)="editDoctor(doctor)">
+              <button class="edit-btn" (click)="editDoctor(doctor)" [disabled]="doctor.etat === 0">
                 <fa-icon [icon]="faEdit"></fa-icon>
               </button>
               <button class="delete-btn" (click)="deleteDoctor(doctor.uid)">
@@ -75,24 +76,58 @@
           </div>
           
           <div class="doctor-info">
-            <p><strong>Email:</strong> {{ doctor.email }}</p>
-            <p *ngIf="doctor.tel"><strong>Téléphone:</strong> {{ doctor.tel }}</p>
-            <p><strong>Patients:</strong> {{ getPatientCount(doctor) }}</p>
+            <div class="info-row">
+              <span class="info-label">Email:</span>
+              <span class="info-value">{{ doctor.email }}</span>
+            </div>
+            <div class="info-row" *ngIf="doctor.tel">
+              <span class="info-label">Téléphone:</span>
+              <span class="info-value">{{ doctor.tel }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Patients:</span>
+              <span class="info-value">{{ getPatientCount(doctor) }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">État:</span>
+              <span class="info-value" [class.status-pending]="doctor.etat === 2" [class.status-accepted]="doctor.etat === 0" [class.status-refused]="doctor.etat === 1">
+                {{ doctor.etat === 2 ? 'En attente' : doctor.etat === 0 ? 'Accepté' : 'Refusé' }}
+              </span>
+            </div>
+          </div>
+
+          <div class="doctor-actions-footer">
+            <button class="accept-btn" (click)="AcceptMedecin(doctor.uid || getDoctorKey(doctor))" *ngIf="doctor.etat === 2">
+              <fa-icon [icon]="faCheck"></fa-icon>
+              <span>Accepter</span>
+            </button>
+            <button class="refuse-btn" (click)="RefuseMedecin(doctor.uid || getDoctorKey(doctor))" *ngIf="doctor.etat === 2">
+              <fa-icon [icon]="faTimes"></fa-icon>
+              <span>Refuser</span>
+            </button>
+            <button class="accept-btn" (click)="AcceptMedecin(doctor.uid || getDoctorKey(doctor))" *ngIf="doctor.etat === 1">
+              <fa-icon [icon]="faCheck"></fa-icon>
+              <span>Accepter</span>
+            </button>
+            <button class="refuse-btn" (click)="RefuseMedecin(doctor.uid || getDoctorKey(doctor))" *ngIf="doctor.etat === 0">
+              <fa-icon [icon]="faTimes"></fa-icon>
+              <span>Refuser</span>
+            </button>
           </div>
 
           <div class="doctor-patients">
-            <h4>Liste des Patients</h4>
-            <div class="patient-actions-header">
-              <!-- <button class="add-patient-btn" (click)="addPatient(doctor.uid)">
-                <fa-icon [icon]="faPlus"></fa-icon>
-                <span>Ajouter un patient</span>
-              </button> -->
+            <div class="patients-header">
+              <h4>Liste des Patients</h4>
+              <span class="patient-count">{{ getPatients(doctor).length }} patients</span>
             </div>
+            
             <div *ngIf="getPatients(doctor).length > 0" class="patients-list">
               <div *ngFor="let patient of getPatients(doctor)" class="patient-item">
                 <div class="patient-header">
-                  <p class="patient-name">{{ patient.prenom }} {{ patient.nom }}</p>
-                  <span class="patient-info">{{ patient.age }} ans • {{ patient.genre }}</span>
+                  <div class="patient-identity">
+                    <p class="patient-name">{{ patient.prenom }} {{ patient.nom }}</p>
+                    <span class="patient-info">{{ patient.age }} ans • {{ patient.genre }}</span>
+                  </div>
                   <div class="patient-actions">
                     <button class="edit-btn" (click)="editPatient(doctor.uid, patient)">
                       <fa-icon [icon]="faEdit"></fa-icon>
@@ -103,14 +138,14 @@
                   </div>
                 </div>
                 <div class="patient-details">
-                  <p>
+                  <div class="detail-item">
                     <fa-icon [icon]="faIdCard"></fa-icon>
-                    CIN: {{ patient.cin }}
-                  </p>
-                  <p>
+                    <span>CIN: {{ patient.cin }}</span>
+                  </div>
+                  <div class="detail-item">
                     <fa-icon [icon]="faCode"></fa-icon>
-                    Code: {{ patient.code }}
-                  </p>
+                    <span>Code: {{ patient.code }}</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -125,5 +160,6 @@
     <!-- Router outlet for other components -->
     <router-outlet></router-outlet>
   </div>
+</div>
 
  

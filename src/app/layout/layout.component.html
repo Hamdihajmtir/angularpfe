@@ -45,6 +45,13 @@
 		</li>
 
 		<li>
+			<a href="#" (click)="openBraceletModal($event)">
+				<i class='bx bx-watch'></i>
+				<span>Bracelet</span>
+			</a>
+		</li>
+
+		<li>
 			<a href="#" class="logout" (click)="logout($event)">
 				<i class='bx bx-log-out'></i>
 				<span>{{ 'logout' | translate }}</span>
@@ -197,6 +204,20 @@
 			</div>
 		</div>
 	</div> -->
+
+	<!-- MODAL BRACELET -->
+	<div class="modal-overlay" [class.active]="isBraceletModalOpen" (click)="closeBraceletModal($event)">
+		<div class="modal-container bracelet-modal">
+			<div class="modal-header">
+				<h3>Gestion des Bracelets</h3>
+				<button class="modal-close" (click)="closeBraceletModal($event)"><i class='bx bx-x'></i></button>
+			</div>
+			<div class="modal-body">
+				<app-bracelet></app-bracelet>
+			</div>
+		</div>
+	</div>
+	<!-- FIN MODAL BRACELET -->
 
 <!-- <div class="app-container" [ngClass]="currentTheme">
   <header>

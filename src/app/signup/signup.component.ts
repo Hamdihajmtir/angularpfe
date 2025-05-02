@@ -11,6 +11,7 @@ import {
   faUserPlus 
 } from '@fortawesome/free-solid-svg-icons';
 import { FirebaseService } from '../services/firebase.service';
+import { NotificationService } from '../services/notification.service';
 
 @Component({
   selector: 'app-signup',
@@ -34,7 +35,8 @@ export class SignupComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private router: Router,
-    private firebaseService: FirebaseService
+    private firebaseService: FirebaseService,
+    private notificationService: NotificationService
   ) { }
 
   ngOnInit() {
@@ -137,6 +139,9 @@ export class SignupComponent implements OnInit {
         
         if (result.success) {
           console.log('Inscription réussie, redirection vers la page de connexion');
+          this.notificationService.showSuccess(
+            'Inscription réussie ! Un email de vérification a été envoyé à votre adresse email. Veuillez vérifier votre boîte de réception et cliquer sur le lien de vérification. Une fois votre email vérifié, votre compte sera en attente d\'approbation par l\'administrateur. Vous serez notifié par email une fois votre compte approuvé.'
+          );
           this.router.navigate(['/login']);
         } else {
           this.errorMessage = result.error || "Une erreur s'est produite lors de l'inscription";

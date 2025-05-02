@@ -9,6 +9,7 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { faHeartPulse } from '@fortawesome/free-solid-svg-icons';
 import { NotificationPanelComponent } from '../components/notification-panel/notification-panel.component';
 import { FirebaseService } from '../services/firebase.service';
+import { BraceletComponent } from '../bracelet/bracelet.component';
 
 interface Patient {
   id: string;
@@ -37,7 +38,15 @@ interface Appointment {
   templateUrl: './layout.component.html',
   styleUrls: ['./layout.component.css'],
   standalone: true,
-  imports: [CommonModule, RouterModule, ReactiveFormsModule, FontAwesomeModule, TranslatePipe, NotificationPanelComponent]
+  imports: [
+    CommonModule,
+    RouterModule,
+    ReactiveFormsModule,
+    FontAwesomeModule,
+    TranslatePipe,
+    NotificationPanelComponent,
+    BraceletComponent
+  ]
 })
 export class LayoutComponent implements OnInit, AfterViewInit {
   isDarkMode = false;
@@ -76,6 +85,8 @@ export class LayoutComponent implements OnInit, AfterViewInit {
   faHeartPulse = faHeartPulse;
   
   isRtl: boolean = false;
+  
+  isBraceletModalOpen = false;
   
   constructor(
     private themeService: ThemeService,
@@ -703,5 +714,15 @@ export class LayoutComponent implements OnInit, AfterViewInit {
     } else {
       document.body.classList.remove('rtl-layout');
     }
+  }
+
+  openBraceletModal(event: Event): void {
+    event.preventDefault();
+    this.isBraceletModalOpen = true;
+  }
+
+  closeBraceletModal(event: Event): void {
+    event.preventDefault();
+    this.isBraceletModalOpen = false;
   }
 }

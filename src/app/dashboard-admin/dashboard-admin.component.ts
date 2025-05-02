@@ -1,12 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
-import { faUserMd, faUsers, faCalendarAlt, faSignOutAlt, faUserShield, faIdCard, faCode, faPlus, faEdit, faTrash, faCog, faPalette, faUserPlus } from '@fortawesome/free-solid-svg-icons';
+import { faUserMd, faUsers, faCalendarAlt, faSignOutAlt, faUserShield, faIdCard, faCode, faPlus, faEdit, faTrash, faCog, faPalette, faUserPlus, faCheck, faTimes } from '@fortawesome/free-solid-svg-icons';
 import { FirebaseService } from '../services/firebase.service';
 import { Router, RouterModule } from '@angular/router';
 import { FaIconLibrary } from '@fortawesome/angular-fontawesome';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { NotificationService } from '../services/notification.service';
 
 interface Patient {
   id: string;
@@ -28,6 +29,8 @@ interface Doctor {
   tel?: string;
   uid: string;
   patients?: { [key: string]: Patient };
+  etat: number;
+  source?: string;
 }
 
 @Component({
@@ -52,6 +55,8 @@ export class DashboardAdminComponent implements OnInit {
   faCog = faCog;
   faPalette = faPalette;
   faUserPlus = faUserPlus;
+  faCheck = faCheck;
+  faTimes = faTimes;
   doctors: { [key: string]: Doctor } = {};
   loading: boolean = true;
   error: string = '';
@@ -70,18 +75,19 @@ export class DashboardAdminComponent implements OnInit {
     private firebaseService: FirebaseService,
     public router: Router,
     private library: FaIconLibrary,
-    private fb: FormBuilder
+    private formBuilder: FormBuilder,
+    private notificationService: NotificationService
   ) {
-    library.addIcons(faUserMd, faUsers, faCalendarAlt, faSignOutAlt, faUserShield, faIdCard, faCode, faPlus, faEdit, faTrash, faCog, faPalette, faUserPlus);
+    library.addIcons(faUserMd, faUsers, faCalendarAlt, faSignOutAlt, faUserShield, faIdCard, faCode, faPlus, faEdit, faTrash, faCog, faPalette, faUserPlus, faCheck, faTimes);
 
-    this.doctorForm = this.fb.group({
+    this.doctorForm = this.formBuilder.group({
       nom: ['', Validators.required],
       prenom: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
       tel: ['', [Validators.required, Validators.pattern(/^[0-9]{10}$/)]]
     });
 
-    this.patientForm = this.fb.group({
+    this.patientForm = this.formBuilder.group({
       nom: ['', Validators.required],
       prenom: ['', Validators.required],
       age: ['', [Validators.required, Validators.min(0)]],
@@ -125,6 +131,15 @@ export class DashboardAdminComponent implements OnInit {
     return Object.values(this.doctors);
   }
 
+  getDoctorKey(doctor: Doctor): string {
+    for (const key in this.doctors) {
+      if (this.doctors[key].email === doctor.email) {
+        return key;
+      }
+    }
+    return '';
+  }
+
   async logout() {
     try {
       await this.firebaseService.logout();
@@ -155,16 +170,20 @@ export class DashboardAdminComponent implements OnInit {
   }
 
   async deleteDoctor(doctorId: string) {
-    if (confirm('Êtes-vous sûr de vouloir supprimer ce médecin ?')) {
+    if (confirm('Êtes-vous sûr de vouloir supprimer ce médecin ? Cette action est irréversible.')) {
       try {
         const result = await this.firebaseService.deleteDoctor(doctorId);
         if (result.success) {
+          // Supprimer le médecin de la liste locale
           delete this.doctors[doctorId];
+          alert('Médecin supprimé avec succès');
         } else {
-          this.error = "Erreur lors de la suppression du médecin";
+          this.error = "Erreur lors de la suppression du médecin: " + result.error;
+          alert(this.error);
         }
       } catch (error: any) {
         this.error = error.message;
+        alert('Erreur: ' + this.error);
       }
     }
   }
@@ -360,6 +379,28 @@ export class DashboardAdminComponent implements OnInit {
     } catch (error) {
       console.error('Erreur lors de la vérification du CIN:', error);
       return false;
+    }
+  }
+
+  async AcceptMedecin(doctorId: string) {
+    try {
+      await this.firebaseService.acceptDoctor(doctorId);
+      this.notificationService.showSuccess('Médecin accepté avec succès');
+      await this.loadDoctors();
+    } catch (error) {
+      console.error('Erreur lors de l\'acceptation du médecin:', error);
+      this.notificationService.showError('Erreur lors de l\'acceptation du médecin');
+    }
+  }
+
+  async RefuseMedecin(doctorId: string) {
+    try {
+      await this.firebaseService.refuseDoctor(doctorId);
+      this.notificationService.showSuccess('Médecin refusé avec succès');
+      await this.loadDoctors();
+    } catch (error) {
+      console.error('Erreur lors du refus du médecin:', error);
+      this.notificationService.showError('Erreur lors du refus du médecin');
     }
   }
 }

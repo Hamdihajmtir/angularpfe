@@ -90,4 +90,20 @@ export class NotificationService {
       type: 'info'
     });
   }
+
+  showSuccess(message: string, title: string = 'Succès') {
+    this.addNotification({
+      title,
+      message,
+      type: 'info'
+    });
+  }
+
+  showError(message: string, title: string = 'Erreur') {
+    this.addNotification({
+      title,
+      message,
+      type: 'error'
+    });
+  }
 } 

@@ -2104,3 +2104,34 @@ body.dark .has-event::after {
 }
 
 /* Ajoutez d'autres styles RTL nécessaires */
+
+/* Styles pour la modale bracelet */
+.bracelet-modal {
+    max-width: 800px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.bracelet-modal .modal-body {
+    padding: 20px;
+}
+
+/* Animation pour l'ouverture de la modale */
+.modal-overlay.active {
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+.modal-container {
+    animation: slideIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideIn {
+    from { transform: translateY(-20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
