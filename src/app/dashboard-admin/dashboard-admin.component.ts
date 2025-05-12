@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
-import { faUserMd, faUsers, faCalendarAlt, faSignOutAlt, faUserShield, faIdCard, faCode, faPlus, faEdit, faTrash, faCog, faPalette, faUserPlus, faCheck, faTimes } from '@fortawesome/free-solid-svg-icons';
+import { faUserMd, faUsers, faCalendarAlt, faSignOutAlt, faUserShield, faIdCard, faCode, faPlus, faEdit, faTrash, faCog, faPalette, faUserPlus, faCheck, faTimes, faUserNurse, faPhone } from '@fortawesome/free-solid-svg-icons';
 import { FirebaseService } from '../services/firebase.service';
 import { Router, RouterModule } from '@angular/router';
 import { FaIconLibrary } from '@fortawesome/angular-fontawesome';
@@ -31,6 +31,7 @@ interface Doctor {
   patients?: { [key: string]: Patient };
   etat: number;
   source?: string;
+  secretaires?: { [key: string]: any };
 }
 
 @Component({
@@ -57,6 +58,8 @@ export class DashboardAdminComponent implements OnInit {
   faUserPlus = faUserPlus;
   faCheck = faCheck;
   faTimes = faTimes;
+  faUserNurse = faUserNurse;
+  faPhone = faPhone;
   doctors: { [key: string]: Doctor } = {};
   loading: boolean = true;
   error: string = '';
@@ -71,6 +74,10 @@ export class DashboardAdminComponent implements OnInit {
   editingPatient: Patient | null = null;
   selectedDoctorId: string | null = null;
 
+  isSecretaireModalOpen = false;
+  editingSecretaire: any = null;
+  secretaireForm: FormGroup;
+
   constructor(
     private firebaseService: FirebaseService,
     public router: Router,
@@ -78,7 +85,7 @@ export class DashboardAdminComponent implements OnInit {
     private formBuilder: FormBuilder,
     private notificationService: NotificationService
   ) {
-    library.addIcons(faUserMd, faUsers, faCalendarAlt, faSignOutAlt, faUserShield, faIdCard, faCode, faPlus, faEdit, faTrash, faCog, faPalette, faUserPlus, faCheck, faTimes);
+    library.addIcons(faUserMd, faUsers, faCalendarAlt, faSignOutAlt, faUserShield, faIdCard, faCode, faPlus, faEdit, faTrash, faCog, faPalette, faUserPlus, faCheck, faTimes, faUserNurse, faPhone);
 
     this.doctorForm = this.formBuilder.group({
       nom: ['', Validators.required],
@@ -94,6 +101,14 @@ export class DashboardAdminComponent implements OnInit {
       genre: ['', Validators.required],
       cin: ['', [Validators.required, Validators.pattern(/^[0-9]{8}$/)]],
       code: ['', Validators.required]
+    });
+
+    this.secretaireForm = this.formBuilder.group({
+      nom: ['', Validators.required],
+      prenom: ['', Validators.required],
+      email: ['', [Validators.required, Validators.email]],
+      telephone: ['', [Validators.required, Validators.pattern(/^[0-9]{8}$/)]],
+      cin: ['', [Validators.required, Validators.pattern(/^[0-9]{8}$/)]]
     });
   }
 
@@ -401,6 +416,93 @@ export class DashboardAdminComponent implements OnInit {
     } catch (error) {
       console.error('Erreur lors du refus du médecin:', error);
       this.notificationService.showError('Erreur lors du refus du médecin');
+    }
+  }
+
+  getSecretaires(doctor: Doctor): any[] {
+    if (!doctor.secretaires) return [];
+    return Object.values(doctor.secretaires);
+  }
+
+  async addSecretaire(doctor: Doctor) {
+    this.router.navigate(['/dashboard-admin/generate-secretaire'], {
+      queryParams: { doctorId: doctor.uid }
+    });
+  }
+
+  async editSecretaire(doctorId: string, secretaire: any) {
+    try {
+      const result = await this.firebaseService.getSecretaireById(doctorId, secretaire.uid);
+      if (result.success) {
+        this.editingSecretaire = result.secretaire;
+        this.secretaireForm.setValue({
+          nom: this.editingSecretaire.nom,
+          prenom: this.editingSecretaire.prenom,
+          email: this.editingSecretaire.email,
+          telephone: this.editingSecretaire.telephone,
+          cin: this.editingSecretaire.cin
+        });
+        this.isSecretaireModalOpen = true;
+      } else {
+        this.notificationService.showError('Impossible de récupérer les informations du secrétaire');
+      }
+    } catch (error: any) {
+      this.notificationService.showError(error.message);
+    }
+  }
+
+  async updateSecretaire() {
+    if (this.secretaireForm.valid && this.editingSecretaire) {
+      try {
+        const doctorId = this.editingSecretaire.doctorId;
+        const secretaireId = this.editingSecretaire.uid;
+        const secretaireData = {
+          ...this.secretaireForm.value,
+          uid: secretaireId,
+          doctorId: doctorId,
+          role: 'secretaire'
+        };
+
+        const result = await this.firebaseService.updateSecretaire(doctorId, secretaireId, secretaireData);
+        if (result.success) {
+          // Mettre à jour la liste des secrétaires localement
+          if (this.doctors[doctorId]?.secretaires) {
+            this.doctors[doctorId].secretaires![secretaireId] = secretaireData;
+          }
+          this.notificationService.showSuccess('Secrétaire mis à jour avec succès');
+          this.closeSecretaireModal();
+        } else {
+          this.notificationService.showError(result.error);
+        }
+      } catch (error: any) {
+        this.notificationService.showError(error.message);
+      }
+    }
+  }
+
+  closeSecretaireModal() {
+    this.isSecretaireModalOpen = false;
+    this.secretaireForm.reset();
+    this.editingSecretaire = null;
+  }
+
+  async deleteSecretaire(doctorId: string, secretaireId: string) {
+    try {
+      const confirmed = confirm('Êtes-vous sûr de vouloir supprimer ce secrétaire ?');
+      if (!confirmed) return;
+
+      const result = await this.firebaseService.deleteSecretaire(doctorId, secretaireId);
+      if (result.success) {
+        // Mettre à jour la liste des secrétaires localement
+        if (this.doctors[doctorId]?.secretaires) {
+          delete this.doctors[doctorId].secretaires![secretaireId];
+        }
+        this.notificationService.showSuccess('Secrétaire supprimé avec succès');
+      } else {
+        this.notificationService.showError(result.error);
+      }
+    } catch (error: any) {
+      this.notificationService.showError(error.message);
     }
   }
 }

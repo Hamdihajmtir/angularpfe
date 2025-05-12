@@ -1,7 +1,7 @@
 .dashboard-container {
   display: flex;
   min-height: 100vh;
-  background-color: #f5f7fa;
+  background-color: #f5f6fa;
   position: relative;
 }
 
@@ -16,60 +16,41 @@
 }
 
 .sidebar-header {
-  padding: 1.5rem;
-  text-align: center;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 20px 0;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  margin-bottom: 1.5rem;
-  background: linear-gradient(135deg, rgba(30, 95, 116, 0.2) 0%, rgba(30, 116, 116, 0.1) 100%);
-  border-radius: 0 0 15px 15px;
-}
-
-.sidebar-header h2 {
-  color: #1E5F74;
-  font-size: 1.5rem;
-  font-weight: 600;
-  margin: 0.5rem 0 0;
-  letter-spacing: 0.5px;
 }
 
 .admin-icon {
-  font-size: 2.5rem;
-  color: #1E5F74;
-  margin-bottom: 0.5rem;
-  background: rgba(255, 255, 255, 0.9);
-  padding: 0.8rem;
-  border-radius: 50%;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s ease;
-}
-
-.admin-icon:hover {
-  transform: scale(1.05);
+  font-size: 24px;
+  color: #ffffff;
 }
 
 .sidebar-menu {
   flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+  margin-top: 30px;
 }
 
 .menu-item {
   display: flex;
   align-items: center;
-  padding: 15px;
-  margin: 5px 0;
-  border-radius: 8px;
+  gap: 10px;
+  padding: 12px 15px;
+  color: #ffffff;
   cursor: pointer;
+  border-radius: 8px;
+  margin-bottom: 5px;
   transition: all 0.3s ease;
 }
 
 .menu-item:hover {
-  background-color: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .menu-item.active {
-  background-color: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.2);
 }
 
 .menu-item fa-icon {
@@ -82,21 +63,21 @@
 }
 
 .logout-btn {
-  width: 100%;
-  padding: 10px;
-  background: transparent;
-  border: 1px solid white;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
   color: white;
+  padding: 12px;
   border-radius: 8px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 10px;
   transition: all 0.3s ease;
 }
 
 .logout-btn:hover {
-  background-color: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.2);
 }
 
 .logout-btn fa-icon {
@@ -106,24 +87,29 @@
 /* Main Content Styles */
 .main-content {
   flex: 1;
-  padding: 20px;
+  padding: 30px;
+  overflow-y: auto;
 }
 
 .content-header {
   margin-bottom: 30px;
 }
 
+.content-header h1 {
+  color: #1E5F74;
+  margin-bottom: 20px;
+}
+
 .stats-container {
   display: flex;
   gap: 20px;
-  margin-top: 20px;
 }
 
 .stat-card {
-  background-color: white;
+  background: white;
   padding: 20px;
   border-radius: 10px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   display: flex;
   align-items: center;
   gap: 15px;
@@ -131,7 +117,7 @@
 
 .stat-card fa-icon {
   font-size: 24px;
-  color: #3498db;
+  color: #1E5F74;
 }
 
 /* Doctors Grid Styles */
@@ -142,9 +128,9 @@
 }
 
 .doctor-card {
-  background-color: white;
+  background: white;
   border-radius: 10px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   padding: 20px;
 }
 
@@ -152,7 +138,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 15px;
 }
 
 .doctor-identity {
@@ -162,8 +148,8 @@
 }
 
 .doctor-icon {
-  font-size: 24px;
-  color: #3498db;
+  font-size: 20px;
+  color: #1E5F74;
 }
 
 .doctor-actions {
@@ -190,39 +176,44 @@
 }
 
 .doctor-info {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
   margin-bottom: 20px;
 }
 
 .info-row {
   display: flex;
   justify-content: space-between;
-  padding: 8px;
-  background-color: #f8f9fa;
-  border-radius: 6px;
+  margin-bottom: 10px;
 }
 
 .info-label {
-  font-weight: 600;
-  color: #2c3e50;
+  color: #666;
+  font-weight: 500;
 }
 
 .info-value {
   color: #34495e;
 }
 
+.status-badge {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
 .status-pending {
-  color: #f39c12;
+  background-color: #fff3cd;
+  color: #856404;
 }
 
 .status-accepted {
-  color: #2ecc71;
+  background-color: #d4edda;
+  color: #155724;
 }
 
 .status-refused {
-  color: #e74c3c;
+  background-color: #f8d7da;
+  color: #721c24;
 }
 
 .doctor-actions-footer {
@@ -231,33 +222,42 @@
   margin-bottom: 20px;
 }
 
-.accept-btn, .refuse-btn {
+.action-btn {
   flex: 1;
-  padding: 10px;
+  padding: 8px;
   border: none;
-  border-radius: 6px;
+  border-radius: 5px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  transition: background-color 0.3s;
+  gap: 5px;
+  font-weight: 500;
+  transition: all 0.3s ease;
 }
 
 .accept-btn {
-  background-color: #2ecc71;
+  background-color: #28a745;
   color: white;
 }
 
+.accept-btn:hover {
+  background-color: #218838;
+}
+
 .refuse-btn {
-  background-color: #e74c3c;
+  background-color: #dc3545;
   color: white;
+}
+
+.refuse-btn:hover {
+  background-color: #c82333;
 }
 
 /* Patients Section Styles */
 .doctor-patients {
   border-top: 1px solid #eee;
-  padding-top: 20px;
+  padding-top: 15px;
 }
 
 .patients-header {
@@ -268,7 +268,7 @@
 }
 
 .patient-count {
-  color: #7f8c8d;
+  color: #666;
   font-size: 14px;
 }
 
@@ -279,16 +279,17 @@
 }
 
 .patient-item {
-  background-color: #f8f9fa;
+  background: #f8f9fa;
   border-radius: 8px;
-  padding: 15px;
+  padding: 12px;
+  margin-bottom: 10px;
 }
 
 .patient-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
 
 .patient-identity {
@@ -297,13 +298,13 @@
 }
 
 .patient-name {
-  font-weight: 600;
+  font-weight: 500;
   margin: 0;
 }
 
 .patient-info {
-  color: #7f8c8d;
-  font-size: 14px;
+  color: #666;
+  font-size: 12px;
 }
 
 .patient-details {
@@ -314,36 +315,32 @@
 .detail-item {
   display: flex;
   align-items: center;
-  gap: 8px;
-  color: #34495e;
-}
-
-.detail-item fa-icon {
-  color: #3498db;
+  gap: 5px;
+  color: #666;
+  font-size: 12px;
 }
 
 .no-patients {
   text-align: center;
-  color: #7f8c8d;
+  color: #666;
   padding: 20px;
-  background-color: #f8f9fa;
+  background: #f8f9fa;
   border-radius: 8px;
 }
 
 /* Loading and Error States */
 .loading-spinner {
   text-align: center;
-  padding: 40px;
-  color: #3498db;
+  padding: 20px;
+  color: #666;
 }
 
 .error-message {
-  text-align: center;
-  padding: 20px;
-  background-color: #fde8e8;
-  color: #e74c3c;
+  background: #f8d7da;
+  color: #721c24;
+  padding: 15px;
   border-radius: 8px;
-  margin: 20px 0;
+  margin-bottom: 20px;
 }
 
 /* Responsive Design */
@@ -556,158 +553,129 @@
 
 /* Modal Styles */
 .modal {
+  display: none;
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
   background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
   z-index: 1000;
+}
+
+.modal.show {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .modal-content {
   background-color: white;
-  padding: 2rem;
-  border-radius: 8px;
+  border-radius: 10px;
   width: 90%;
-  max-width: 600px;
+  max-width: 500px;
   max-height: 90vh;
   overflow-y: auto;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
 }
 
 .modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.5rem;
+  padding: 20px;
+  border-bottom: 1px solid #eee;
 }
 
 .modal-header h2 {
   margin: 0;
-  color: #333;
+  color: #1E5F74;
   font-size: 1.5rem;
 }
 
 .close-btn {
   background: none;
   border: none;
-  font-size: 1.5rem;
-  cursor: pointer;
   color: #666;
-  padding: 0.5rem;
-  transition: color 0.3s ease;
+  cursor: pointer;
+  font-size: 1.2rem;
+  padding: 5px;
+  transition: color 0.3s;
 }
 
 .close-btn:hover {
-  color: #333;
+  color: #1E5F74;
 }
 
-.form-group {
-  margin-bottom: 1.5rem;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 0.5rem;
-  color: #333;
-  font-weight: 500;
-}
-
-.form-control {
-  width: 100%;
-  padding: 0.75rem;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 1rem;
-  transition: border-color 0.3s ease;
-}
-
-.form-control:focus {
-  outline: none;
-  border-color: #007bff;
-  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
-}
-
-.error-message {
-  color: #dc3545;
-  font-size: 0.875rem;
-  margin-top: 0.25rem;
+.modal-body {
+  padding: 20px;
 }
 
 .modal-footer {
   display: flex;
   justify-content: flex-end;
-  gap: 1rem;
-  margin-top: 2rem;
+  gap: 10px;
+  padding: 20px;
+  border-top: 1px solid #eee;
 }
 
-.btn {
-  padding: 0.75rem 1.5rem;
-  border: none;
-  border-radius: 4px;
+/* Styles pour le formulaire dans le modal */
+.modal .form-group {
+  margin-bottom: 20px;
+}
+
+.modal .form-control {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
   font-size: 1rem;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.modal .form-control:focus {
+  border-color: #1E5F74;
+  box-shadow: 0 0 0 2px rgba(30, 95, 116, 0.1);
+  outline: none;
+}
+
+.modal .error-message {
+  color: #dc3545;
+  font-size: 0.875rem;
+  margin-top: 5px;
+}
+
+.modal .btn {
+  padding: 10px 20px;
+  border-radius: 5px;
+  font-weight: 500;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.3s;
 }
 
-.btn-primary {
-  background-color: #007bff;
+.modal .btn-primary {
+  background-color: #1E5F74;
   color: white;
+  border: none;
 }
 
-.btn-primary:hover {
-  background-color: #0056b3;
+.modal .btn-primary:hover:not(:disabled) {
+  background-color: #164a5c;
 }
 
-.btn-primary:disabled {
+.modal .btn-primary:disabled {
   background-color: #ccc;
   cursor: not-allowed;
 }
 
-.btn-secondary {
-  background-color: #6c757d;
-  color: white;
+.modal .btn-secondary {
+  background-color: #f8f9fa;
+  color: #1E5F74;
+  border: 1px solid #ddd;
 }
 
-.btn-secondary:hover {
-  background-color: #545b62;
-}
-
-/* Dark Mode Styles */
-:host-context(.dark-mode) .modal-content {
-  background-color: #2d2d2d;
-  color: #fff;
-}
-
-:host-context(.dark-mode) .modal-header h2 {
-  color: #fff;
-}
-
-:host-context(.dark-mode) .form-group label {
-  color: #fff;
-}
-
-:host-context(.dark-mode) .form-control {
-  background-color: #3d3d3d;
-  border-color: #4d4d4d;
-  color: #fff;
-}
-
-:host-context(.dark-mode) .form-control:focus {
-  border-color: #0056b3;
-  box-shadow: 0 0 0 2px rgba(0, 86, 179, 0.25);
-}
-
-:host-context(.dark-mode) .close-btn {
-  color: #fff;
-}
-
-:host-context(.dark-mode) .close-btn:hover {
-  color: #ccc;
+.modal .btn-secondary:hover {
+  background-color: #e9ecef;
 }
 
 .patient-actions-header {
@@ -775,4 +743,156 @@
 
 .refuse-btn:hover {
   background-color: #d32f2f;
+}
+
+.doctor-secretaires {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background: #f8f9fa;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.secretaires-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.secretaires-header h4 {
+  color: #1E5F74;
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.add-secretaire-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: #1E5F74;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.add-secretaire-btn:hover {
+  background: #164b5c;
+}
+
+.secretaires-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.secretaire-item {
+  background: white;
+  border-radius: 10px;
+  padding: 1.2rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.secretaire-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.secretaire-identity {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.secretaire-icon {
+  font-size: 1.5rem;
+  color: #1E5F74;
+  background: #e8f4f8;
+  padding: 0.8rem;
+  border-radius: 50%;
+}
+
+.secretaire-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.secretaire-name {
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.secretaire-email {
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.secretaire-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.secretaire-details {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #eee;
+}
+
+.detail-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.detail-item fa-icon {
+  color: #1E5F74;
+}
+
+.no-secretaires {
+  text-align: center;
+  padding: 2rem;
+  color: #666;
+  background: white;
+  border-radius: 8px;
+  border: 2px dashed #ddd;
+}
+
+.edit-btn, .delete-btn {
+  padding: 0.5rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.edit-btn {
+  background: #e8f4f8;
+  color: #1E5F74;
+}
+
+.delete-btn {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.edit-btn:hover {
+  background: #d1e7f0;
+}
+
+.delete-btn:hover {
+  background: #fecaca;
 }

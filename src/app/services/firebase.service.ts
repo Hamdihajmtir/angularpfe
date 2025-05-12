@@ -18,9 +18,10 @@ import {
   get,
   child,
   onValue,
-  off
+  off,
+  remove
 } from 'firebase/database';
-import { BehaviorSubject } from 'rxjs';
+import { async, BehaviorSubject } from 'rxjs';
 import { catchError, of, map, from } from 'rxjs';
 import { NotificationService } from './notification.service';
 
@@ -1053,4 +1054,99 @@ export class FirebaseService {
       return { success: false, error: error.message };
     }
   }
-} 
+
+  async deleteSecretaire(doctorId: string, secretaireId: string) {
+    try {
+      const secretaireRef = ref(this.db, `medecins/${doctorId}/secretaires/${secretaireId}`);
+      await remove(secretaireRef);
+      return { success: true };
+    } catch (error: any) {
+      console.error("Erreur lors de la suppression du secrétaire:", error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  async getSecretaireByEmail(email: string, nom: string, prenom: string, doctorId: string) {
+    try {
+      const snapshot = await get(ref(this.db, `medecins/${doctorId}/secretaires`));
+      if (!snapshot.exists()) {
+        return { success: false, error: 'Secrétaire non trouvé' };
+      }
+      const secretairesData = snapshot.val();
+      for (const secretaireId in secretairesData) {
+        const secretaire = secretairesData[secretaireId];
+        if (secretaire.email === email || 
+            (secretaire.nom === nom && secretaire.prenom === prenom)) {
+          return { success: true, secretaire };
+        }
+      }
+      return { success: false, error: 'Secrétaire non trouvé' };
+    } catch (error: any) {
+      console.error("Erreur lors de la récupération du secrétaire:", error);
+      throw new Error("Impossible de récupérer le secrétaire");
+    }
+  }
+
+  async updateSecretaire(doctorId: string, secretaireId: string, secretaireData: any) {
+    try {
+      // Vérifier si le CIN existe déjà pour un autre secrétaire
+      const cinExists = await this.checkSecretaireCinExists(secretaireData.cin, doctorId, secretaireId);
+      if (cinExists) {
+        return { success: false, error: "Ce numéro de CIN existe déjà pour un autre secrétaire" };
+      }
+
+      // Mettre à jour les données du secrétaire
+      await set(ref(this.db, `medecins/${doctorId}/secretaires/${secretaireId}`), {
+        ...secretaireData,
+        dateModification: new Date().toISOString()
+      });
+      return { success: true };
+    } catch (error: any) {
+      console.error("Erreur lors de la mise à jour du secrétaire:", error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  async checkSecretaireCinExists(cin: string, doctorId: string, currentSecretaireId?: string): Promise<boolean> {
+    try {
+      const snapshot = await get(ref(this.db, `medecins/${doctorId}/secretaires`));
+      if (!snapshot.exists()) return false;
+
+      const secretaires = snapshot.val();
+      for (const secretaireId in secretaires) {
+        if (currentSecretaireId && secretaireId === currentSecretaireId) continue;
+        if (secretaires[secretaireId].cin === cin) return true;
+      }
+      return false;
+    } catch (error) {
+      console.error("Erreur lors de la vérification du CIN du secrétaire:", error);
+      return false;
+    }
+  }
+
+  async getSecretaireById(doctorId: string, secretaireId: string) {
+    try {
+      const snapshot = await get(ref(this.db, `medecins/${doctorId}/secretaires/${secretaireId}`));
+      if (!snapshot.exists()) {
+        return { success: false, error: 'Secrétaire non trouvé' };
+      }
+      return { success: true, secretaire: snapshot.val() };
+    } catch (error: any) {
+      console.error("Erreur lors de la récupération du secrétaire:", error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  async getAllSecretaires(doctorId: string) {
+    try {
+      const snapshot = await get(ref(this.db, `medecins/${doctorId}/secretaires`));
+      if (!snapshot.exists()) {
+        return { success: true, secretaires: {} };
+      }
+      return { success: true, secretaires: snapshot.val() };
+    } catch (error: any) {
+      console.error("Erreur lors de la récupération des secrétaires:", error);
+      return { success: false, error: error.message };
+    }
+  }
+}

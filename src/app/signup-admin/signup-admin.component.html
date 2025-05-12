@@ -15,7 +15,7 @@
             id="firstName" 
             formControlName="firstName" 
             placeholder="Entrez votre prénom"
-            [class.is-invalid]="signupForm.get('firstName')?.invalid && signupForm.get('firstName')?.touched"
+            [class.is-invalid]="signupForm.get('firstName')?.invalid && signupForm.get('firstName')?.touched" style="width: 207%;"
           >
           <div class="error-message" *ngIf="signupForm.get('firstName')?.invalid && signupForm.get('firstName')?.touched">
             <small *ngIf="signupForm.get('firstName')?.errors?.['required']">Prénom requis</small>
@@ -32,7 +32,7 @@
             id="lastName" 
             formControlName="lastName" 
             placeholder="Entrez votre nom"
-            [class.is-invalid]="signupForm.get('lastName')?.invalid && signupForm.get('lastName')?.touched"
+            [class.is-invalid]="signupForm.get('lastName')?.invalid && signupForm.get('lastName')?.touched" style="width: 207%;"
           >
           <div class="error-message" *ngIf="signupForm.get('lastName')?.invalid && signupForm.get('lastName')?.touched">
             <small *ngIf="signupForm.get('lastName')?.errors?.['required']">Nom requis</small>

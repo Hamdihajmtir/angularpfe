@@ -3,7 +3,7 @@
   <div class="sidebar">
     <div class="sidebar-header">
       <fa-icon [icon]="faUserShield" class="admin-icon"></fa-icon>
-      <h2>CardioTrack Admin</h2>
+      <h2 style="color: #ffffff;">CardioTrack Admin</h2>
     </div>
     
     <div class="sidebar-menu">
@@ -90,26 +90,18 @@
             </div>
             <div class="info-row">
               <span class="info-label">État:</span>
-              <span class="info-value" [class.status-pending]="doctor.etat === 2" [class.status-accepted]="doctor.etat === 0" [class.status-refused]="doctor.etat === 1">
+              <span class="info-value status-badge" [class.status-pending]="doctor.etat === 2" [class.status-accepted]="doctor.etat === 0" [class.status-refused]="doctor.etat === 1">
                 {{ doctor.etat === 2 ? 'En attente' : doctor.etat === 0 ? 'Accepté' : 'Refusé' }}
               </span>
             </div>
           </div>
 
           <div class="doctor-actions-footer">
-            <button class="accept-btn" (click)="AcceptMedecin(doctor.uid || getDoctorKey(doctor))" *ngIf="doctor.etat === 2">
+            <button class="action-btn accept-btn" (click)="AcceptMedecin(doctor.uid || getDoctorKey(doctor))" *ngIf="doctor.etat === 2 || doctor.etat === 1">
               <fa-icon [icon]="faCheck"></fa-icon>
               <span>Accepter</span>
             </button>
-            <button class="refuse-btn" (click)="RefuseMedecin(doctor.uid || getDoctorKey(doctor))" *ngIf="doctor.etat === 2">
-              <fa-icon [icon]="faTimes"></fa-icon>
-              <span>Refuser</span>
-            </button>
-            <button class="accept-btn" (click)="AcceptMedecin(doctor.uid || getDoctorKey(doctor))" *ngIf="doctor.etat === 1">
-              <fa-icon [icon]="faCheck"></fa-icon>
-              <span>Accepter</span>
-            </button>
-            <button class="refuse-btn" (click)="RefuseMedecin(doctor.uid || getDoctorKey(doctor))" *ngIf="doctor.etat === 0">
+            <button class="action-btn refuse-btn" (click)="RefuseMedecin(doctor.uid || getDoctorKey(doctor))" *ngIf="doctor.etat === 2 || doctor.etat === 0">
               <fa-icon [icon]="faTimes"></fa-icon>
               <span>Refuser</span>
             </button>
@@ -153,12 +145,118 @@
               Aucun patient enregistré
             </div>
           </div>
+
+          <!-- Nouvelle section pour les secrétaires -->
+          <div class="doctor-secretaires">
+            <div class="secretaires-header">
+              <h4>infermier</h4>
+              <button class="add-secretaire-btn" (click)="addSecretaire(doctor)" *ngIf="!getSecretaires(doctor).length">
+                <fa-icon [icon]="faUserPlus"></fa-icon>
+                <span>Ajouter un infermier</span>
+              </button>
+            </div>
+            
+            <div *ngIf="getSecretaires(doctor).length > 0" class="secretaires-list">
+              <div *ngFor="let secretaire of getSecretaires(doctor)" class="secretaire-item">
+                <div class="secretaire-header">
+                  <div class="secretaire-identity">
+                    <fa-icon [icon]="faUserNurse" class="secretaire-icon"></fa-icon>
+                    <div class="secretaire-info">
+                      <p class="secretaire-name">{{ secretaire.prenom }} {{ secretaire.nom }}</p>
+                      <span class="secretaire-email">{{ secretaire.email }}</span>
+                    </div>
+                  </div>
+                  <div class="secretaire-actions">
+                    <button class="edit-btn" (click)="editSecretaire(doctor.uid, secretaire)">
+                      <fa-icon [icon]="faEdit"></fa-icon>
+                    </button>
+                    <button class="delete-btn" (click)="deleteSecretaire(doctor.uid, secretaire.uid)">
+                      <fa-icon [icon]="faTrash"></fa-icon>
+                    </button>
+                  </div>
+                </div>
+                <div class="secretaire-details">
+                  <div class="detail-item">
+                    <fa-icon [icon]="faPhone"></fa-icon>
+                    <span>{{ secretaire.telephone }}</span>
+                  </div>
+                  <div class="detail-item">
+                    <fa-icon [icon]="faIdCard"></fa-icon>
+                    <span>CIN: {{ secretaire.cin }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div *ngIf="getSecretaires(doctor).length === 0" class="no-secretaires">
+              Aucun secrétaire assigné
+            </div>
+          </div>
         </div>
       </div>
     </div>
 
     <!-- Router outlet for other components -->
     <router-outlet></router-outlet>
+  </div>
+</div>
+
+<!-- Modal d'édition des secrétaires -->
+<div class="modal" [class.show]="isSecretaireModalOpen">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>Modifier le secrétaire</h2>
+      <button class="close-btn" (click)="closeSecretaireModal()">
+        <fa-icon [icon]="faTimes"></fa-icon>
+      </button>
+    </div>
+    <div class="modal-body">
+      <form [formGroup]="secretaireForm" (ngSubmit)="updateSecretaire()">
+        <div class="form-group">
+          <label for="nom">Nom</label>
+          <input type="text" id="nom" formControlName="nom" class="form-control">
+          <div class="error-message" *ngIf="secretaireForm.get('nom')?.invalid && secretaireForm.get('nom')?.touched">
+            Le nom est requis
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="prenom">Prénom</label>
+          <input type="text" id="prenom" formControlName="prenom" class="form-control">
+          <div class="error-message" *ngIf="secretaireForm.get('prenom')?.invalid && secretaireForm.get('prenom')?.touched">
+            Le prénom est requis
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input type="email" id="email" formControlName="email" class="form-control">
+          <div class="error-message" *ngIf="secretaireForm.get('email')?.invalid && secretaireForm.get('email')?.touched">
+            Veuillez entrer un email valide
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="telephone">Téléphone</label>
+          <input type="tel" id="telephone" formControlName="telephone" class="form-control">
+          <div class="error-message" *ngIf="secretaireForm.get('telephone')?.invalid && secretaireForm.get('telephone')?.touched">
+            Le numéro de téléphone doit contenir 8 chiffres
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="cin">CIN</label>
+          <input type="text" id="cin" formControlName="cin" class="form-control">
+          <div class="error-message" *ngIf="secretaireForm.get('cin')?.invalid && secretaireForm.get('cin')?.touched">
+            Le CIN doit contenir 8 chiffres
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeSecretaireModal()">Annuler</button>
+          <button type="submit" class="btn btn-primary" [disabled]="secretaireForm.invalid">Enregistrer</button>
+        </div>
+      </form>
+    </div>
   </div>
 </div>
 
