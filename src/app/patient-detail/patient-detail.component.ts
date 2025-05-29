@@ -194,7 +194,7 @@ export class PatientDetailComponent implements OnInit, OnDestroy {
     const reportContent = this.medicalReportForm.get('reportContent')?.value;
     // Si le champ est vide, ne rien faire
     if (!reportContent || reportContent.trim() === '') {
-      alert('Le rapport ne peut pas être vide');
+      alert('Le Liste de remarque ne peut pas être vide');
       return;
     }
     // Si un ID de rapport existe, mettre à jour ce rapport
@@ -218,7 +218,7 @@ export class PatientDetailComponent implements OnInit, OnDestroy {
       printWindow.document.write(`
         <html>
           <head>
-            <title>Rapport Médical - ${this.patient?.prenom} ${this.patient?.nom}</title>
+            <title>Liste de remarque Médical - ${this.patient?.prenom} ${this.patient?.nom}</title>
             <style>
               body { 
                 font-family: Arial, sans-serif; 
@@ -241,7 +241,7 @@ export class PatientDetailComponent implements OnInit, OnDestroy {
             </div>
             
             <div style="text-align: center; margin-bottom: 20px;">
-              <h1>Rapport Médical</h1>
+              <h1>Liste de remarque Médical</h1>
             </div>
             
             <div style="margin-bottom: 20px;">
@@ -315,7 +315,7 @@ export class PatientDetailComponent implements OnInit, OnDestroy {
         </div>
         
         <div style="text-align: center; margin-bottom: 20px;">
-          <h1 style="color: #1E5F74; margin-bottom: 5px;">Rapport Médical</h1>
+          <h1 style="color: #1E5F74; margin-bottom: 5px;">Liste de remarque Médical</h1>
         </div>
         
         <div style="margin-bottom: 20px;">
@@ -377,7 +377,7 @@ export class PatientDetailComponent implements OnInit, OnDestroy {
       const imgHeight = canvas.height * imgWidth / canvas.width;
       
       pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
-      pdf.save(`rapport_medical_${this.patient?.nom}_${this.patient?.prenom}.pdf`);
+      pdf.save(`Liste_de_remarque_medical_${this.patient?.nom}_${this.patient?.prenom}.pdf`);
     });
   }
   
@@ -552,7 +552,7 @@ export class PatientDetailComponent implements OnInit, OnDestroy {
         if (this.medicalReports.length > 0) {
           const latestReport = this.medicalReports[0];
           this.medicalReportForm.patchValue({
-            reportContent: latestReport.rapport
+            reportContent: latestReport.description
           });
           this.currentReportId = latestReport.id;
           this.isEditingReport = true;
@@ -572,7 +572,7 @@ export class PatientDetailComponent implements OnInit, OnDestroy {
     
     const reportData = {
       date: new Date().toISOString(),
-      rapport: this.medicalReportForm.get('reportContent')?.value
+      description: this.medicalReportForm.get('reportContent')?.value
     };
     
     try {
@@ -583,18 +583,18 @@ export class PatientDetailComponent implements OnInit, OnDestroy {
       );
       
       if (response.success) {
-        alert('Rapport médical ajouté avec succès!');
+        alert('Liste de remarque médical ajouté avec succès!');
         this.currentReportId = response.reportId || null;
         this.isEditingReport = true;
         
         // Reload reports to get the updated list
         this.loadMedicalReports(this.patient.id);
       } else {
-        alert("Erreur lors de l'ajout du rapport médical");
+        alert("Erreur lors de l'ajout du Liste de remarque médical");
       }
     } catch (error) {
-      console.error("Erreur lors de l'ajout du rapport médical:", error);
-      alert("Une erreur s'est produite lors de l'ajout du rapport");
+      console.error("Erreur lors de l'ajout du Liste de remarque médical:", error);
+      alert("Une erreur s'est produite lors de l'ajout du Liste de remarque");
     }
   }
 
@@ -603,7 +603,7 @@ export class PatientDetailComponent implements OnInit, OnDestroy {
     
     const reportData = {
       date: new Date().toISOString(),
-      rapport: this.medicalReportForm.get('reportContent')?.value
+      description: this.medicalReportForm.get('reportContent')?.value
     };
     
     try {
@@ -615,16 +615,16 @@ export class PatientDetailComponent implements OnInit, OnDestroy {
       );
       
       if (response.success) {
-        alert('Rapport médical mis à jour avec succès!');
+        alert('Liste de remarque médical mis à jour avec succès!');
         
         // Reload reports to get the updated list
         this.loadMedicalReports(this.patient.id);
       } else {
-        alert("Erreur lors de la mise à jour du rapport médical");
+        alert("Erreur lors de la mise à jour du Liste de remarque médical");
       }
     } catch (error) {
-      console.error("Erreur lors de la mise à jour du rapport médical:", error);
-      alert("Une erreur s'est produite lors de la mise à jour du rapport");
+      console.error("Erreur lors de la mise à jour du Liste de remarque médical:", error);
+      alert("Une erreur s'est produite lors de la mise à jour du Liste de remarque");
     }
   }
 
@@ -636,7 +636,7 @@ export class PatientDetailComponent implements OnInit, OnDestroy {
 
   selectReport(report: any): void {
     this.medicalReportForm.patchValue({
-      reportContent: report.rapport
+      reportContent: report.description
     });
     this.currentReportId = report.id;
     this.isEditingReport = true;
@@ -645,7 +645,7 @@ export class PatientDetailComponent implements OnInit, OnDestroy {
   async deleteReport(reportId: string): Promise<void> {
     if (!this.currentUser || !this.patient) return;
     
-    if (confirm('Êtes-vous sûr de vouloir supprimer ce rapport médical?')) {
+    if (confirm('Êtes-vous sûr de vouloir supprimer ce Liste de remarque médical?')) {
       try {
         const response = await this.firebaseService.deleteMedicalReport(
           this.currentUser.uid,
@@ -654,7 +654,7 @@ export class PatientDetailComponent implements OnInit, OnDestroy {
         );
         
         if (response.success) {
-          alert('Rapport médical supprimé avec succès!');
+          alert('Liste de remarque médical supprimé avec succès!');
           
           // If we deleted the current report, reset the form
           if (reportId === this.currentReportId) {
@@ -664,11 +664,11 @@ export class PatientDetailComponent implements OnInit, OnDestroy {
           // Reload reports to get the updated list
           this.loadMedicalReports(this.patient.id);
         } else {
-          alert("Erreur lors de la suppression du rapport médical");
+          alert("Erreur lors de la suppression du Liste de remarque médical");
         }
       } catch (error) {
-        console.error("Erreur lors de la suppression du rapport médical:", error);
-        alert("Une erreur s'est produite lors de la suppression du rapport");
+        console.error("Erreur lors de la suppression du Liste de remarque médical:", error);
+        alert("Une erreur s'est produite lors de la suppression du Liste de remarque");
       }
     }
   }

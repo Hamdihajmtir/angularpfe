@@ -130,25 +130,26 @@
         [disabled]="!medicalReportForm.valid">
         <i class='bx bx-printer'></i> {{ 'print' | translate }}
       </button>
-      <!-- <button class="report-btn download" (click)="downloadPDF()"
+      <button class="report-btn download" (click)="downloadPDF()"
         [disabled]="!medicalReportForm.valid">
-        <i class='bx bx-download'></i> Télécharger PDF
-      </button> -->
+        <i class='bx bx-download'></i> {{ 'downloadPDF' | translate }}
+      </button>
     </div>
   </div>
   
-  <div class="report-editor">
-    <form [formGroup]="medicalReportForm" (ngSubmit)="editingMedicalReport()? updateMedicalReport() : addMedicalReport()">
+  <div class="report-editor" [class.blur-effect]="currentUser?.isSecretaire">
+    <form [formGroup]="medicalReportForm">
       <div class="form-group">
         <label for="reportContent">{{ 'medicalNotesAndObservations' | translate }}</label>
         <textarea 
           id="reportContent" 
           formControlName="reportContent" 
           rows="10" 
+          [readonly]="currentUser?.isSecretaire"
           placeholder="{{ 'enterClinicalObservations' | translate }}">
         </textarea>
       </div>
-      <div class="report-save">
+      <div class="report-save" *ngIf="!currentUser?.isSecretaire">
         <button class="save-btn" 
           (click)="saveMedicalReport()" 
           [disabled]="!medicalReportForm.valid">
@@ -158,6 +159,54 @@
     </form>
   </div>
 </div>
+
+<!-- Historique des rapports -->
+<!-- <div class="card">
+  <div class="card-header">
+    <h5 class="mb-0">Historique des Liste de remarque</h5>
+  </div>
+  <div class="card-body">
+    <div class="list-group">
+      <div *ngFor="let report of medicalReports" class="list-group-item">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <h6 class="mb-1">{{ report.date | date:'dd/MM/yyyy HH:mm' }}</h6>
+            <p class="mb-1">{{ report.description }}</p>
+          </div>
+          <div class="btn-group" *ngIf="!currentUser?.isSecretaire">
+            <button class="btn btn-sm btn-primary" (click)="selectReport(report)">
+              <i class="fas fa-edit"></i>
+            </button>
+            <button class="btn btn-sm btn-danger" (click)="deleteReport(report.id)">
+              <i class="fas fa-trash"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.blur-effect {
+  filter: blur(2px);
+  pointer-events: none;
+  position: relative;
+}
+
+.blur-effect::after {
+  content: "Lecture seule - Mode Infirmier";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 5px;
+  z-index: 1000;
+}
+</style> -->
 
 <div class="patient-detail-container">
   <div class="back-button">

@@ -47,6 +47,7 @@ export class DashboardComponent implements OnInit {
   searchTerm: string = '';
   filteredPatients: Patient[] = [];
   isSecretaireLogin: boolean = false;
+  isCategoryMenuOpen = false;
 
   constructor(
     private fb: FormBuilder,
@@ -410,5 +411,9 @@ export class DashboardComponent implements OnInit {
       patient.prenom.toLowerCase().includes(searchTermLower) ||
       patient.cin.includes(searchTermLower)
     );
+  }
+
+  toggleCategoryMenu() {
+    this.isCategoryMenuOpen = !this.isCategoryMenuOpen;
   }
 } 

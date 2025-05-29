@@ -17,7 +17,7 @@
       </div> -->
       <div class="menu-item" [class.active]="router.url.includes('generate-secretaire')" routerLink="/dashboard-admin/generate-secretaire">
         <fa-icon [icon]="faUserPlus"></fa-icon>
-        <span>Ajouter infirmière</span>
+        <span>Ajouter infirmier</span>
       </div>
       <div class="menu-item" [class.active]="router.url.includes('parametre')" routerLink="/dashboard-admin/parametre">
         <fa-icon [icon]="faCog"></fa-icon>
@@ -120,14 +120,14 @@
                     <p class="patient-name">{{ patient.prenom }} {{ patient.nom }}</p>
                     <span class="patient-info">{{ patient.age }} ans • {{ patient.genre }}</span>
                   </div>
-                  <div class="patient-actions">
+                  <!-- <div class="patient-actions">
                     <button class="edit-btn" (click)="editPatient(doctor.uid, patient)">
                       <fa-icon [icon]="faEdit"></fa-icon>
                     </button>
                     <button class="delete-btn" (click)="deletePatient(doctor.uid, patient.id)">
                       <fa-icon [icon]="faTrash"></fa-icon>
                     </button>
-                  </div>
+                  </div> -->
                 </div>
                 <div class="patient-details">
                   <div class="detail-item">

@@ -73,16 +73,16 @@
         <a href="#" class="nav-link" style="font-size: 20px;">{{ 'categories' | translate }}</a>
     </div>
     
-    <form action="#" #searchForm>
+    <!-- <form action="#" #searchForm>
         <input type="search" placeholder="{{ 'search' | translate }}...">
         <button type="submit" (click)="toggleSearchForm($event, searchForm, searchIcon)">
             <i class='bx bx-search' #searchIcon></i>
         </button>
-    </form>
+    </form> -->
     
     <div class="right">
         <app-notification-panel></app-notification-panel>
-        <a href="#" class="profile" (click)="toggleProfileMenu($event)">
+        <!-- <a href="#" class="profile" (click)="toggleProfileMenu($event)">
             <img src="https://placehold.co/600x400/png" alt="Profile">
         </a>
         
@@ -92,7 +92,7 @@
                 <li><a href="#">{{ 'settings' | translate }}</a></li>
                 <li><a href="#">{{ 'logout' | translate }}</a></li>
             </ul>
-        </div>
+        </div> -->
     </div>
 </nav>
 <!-- NAVBAR -->
@@ -176,7 +176,7 @@
 							<label for="phone">Téléphone</label>
 							<input type="tel" id="phone" formControlName="phone" placeholder="Numéro de téléphone">
 							<small class="error" *ngIf="patientForm.get('phone')?.invalid && patientForm.get('phone')?.touched">
-								Veuillez saisir un numéro de téléphone valide (10 chiffres)
+								Veuillez saisir un numéro de téléphone valide (8 chiffres)
 							</small>
 						</div>
 						<div class="form-group">
@@ -203,7 +203,7 @@
 				</form>
 			</div>
 		</div>
-	</div> -->
+	</div>-->
 
 	<!-- MODAL BRACELET -->
 	<div class="modal-overlay" [class.active]="isBraceletModalOpen" (click)="closeBraceletModal($event)">

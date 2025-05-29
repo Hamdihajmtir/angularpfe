@@ -9,7 +9,7 @@ import { getAuth, sendPasswordResetEmail } from 'firebase/auth';
 export class AuthService {
   // Add Firebase auth property
   private auth = getAuth();
-  
+    
   // Add missing method
   getCurrentUser() {
     // Return the current user as an Observable

@@ -25,7 +25,7 @@ import { async, BehaviorSubject } from 'rxjs';
 import { catchError, of, map, from } from 'rxjs';
 import { NotificationService } from './notification.service';
 
-interface Secretaire {
+interface Infirmier {
   email: string;
   nom: string;
   prenom: string;
@@ -38,6 +38,18 @@ interface SecretaireDBData {
   nom: string;
   prenom: string;
   doctorId: string;
+}
+
+interface Doctor {
+  email: string;
+  nom: string;
+  prenom: string;
+  tel: string;
+  uid: string;
+  patients: any;
+  etat: number;
+  source: string;
+  infirmiers: any;
 }
 
 @Injectable({
@@ -442,15 +454,15 @@ export class FirebaseService {
   async addMedicalReport(doctorId: string, patientId: string, reportData: any) {
     try {
       const reportId = new Date().getTime().toString(); // Génère un ID unique basé sur le timestamp
-      await set(ref(this.db, `medecins/${doctorId}/rapports/${patientId}/${reportId}`), {
+      await set(ref(this.db, `medecins/${doctorId}/Liste_de_remarque/${patientId}/${reportId}`), {
         id: reportId,
         patientId: patientId,
         date: reportData.date,
-        rapport: reportData.rapport
+        description: reportData.description
       });
       return { success: true, reportId };
     } catch (error: any) {
-      console.error("Erreur lors de l'ajout du rapport médical:", error);
+      console.error("Erreur lors de l'ajout du Liste de remarque médical:", error);
       return { success: false, error: error.message };
     }
   }
@@ -458,14 +470,14 @@ export class FirebaseService {
   // Récupérer tous les rapports médicaux d'un patient
   async getAllMedicalReports(doctorId: string, patientId: string) {
     try {
-      const snapshot = await get(child(ref(this.db), `medecins/${doctorId}/rapports/${patientId}`));
+      const snapshot = await get(child(ref(this.db), `medecins/${doctorId}/Liste_de_remarque/${patientId}`));
       if (snapshot.exists()) {
         return { success: true, reports: snapshot.val() };  
       } else {
         return { success: true, reports: {} };
       }
     } catch (error: any) {
-      console.error("Erreur lors de la récupération des rapports médicaux:", error);
+      console.error("Erreur lors de la récupération des Liste de remarque médicaux:", error);
       return { success: false, error: error.message };
     }
   }
@@ -473,15 +485,15 @@ export class FirebaseService {
   // Mettre à jour un rapport médical existant
   async updateMedicalReport(doctorId: string, patientId: string, reportId: string, reportData: any) {
     try {
-      await set(ref(this.db, `medecins/${doctorId}/rapports/${patientId}/${reportId}`), {
+      await set(ref(this.db, `medecins/${doctorId}/Liste_de_remarque/${patientId}/${reportId}`), {
         id: reportId,
         patientId: patientId,
         date: reportData.date,
-        rapport: reportData.rapport
+        description: reportData.description
       });
       return { success: true };
     } catch (error: any) {
-      console.error("Erreur lors de la mise à jour du rapport médical:", error);
+      console.error("Erreur lors de la mise à jour du Liste de remarque médical:", error);
       return { success: false, error: error.message };
     }
   }
@@ -489,10 +501,10 @@ export class FirebaseService {
   // Supprimer un rapport médical
   async deleteMedicalReport(doctorId: string, patientId: string, reportId: string) {
     try {
-      await set(ref(this.db, `medecins/${doctorId}/rapports/${patientId}/${reportId}`), null);
+      await set(ref(this.db, `medecins/${doctorId}/Liste_de_remarque/${patientId}/${reportId}`), null);
       return { success: true };
     } catch (error: any) {
-      console.error("Erreur lors de la suppression du rapport médical:", error);
+      console.error("Erreur lors de la suppression du Liste de remarque médical:", error);
       return { success: false, error: error.message };
     }
   }
@@ -779,10 +791,10 @@ export class FirebaseService {
 
       // Parcourir tous les médecins et leurs secrétaires
       for (const [medId, medecin] of Object.entries(medecinsData) as [string, any][]) {
-        if (medecin.secretaires) {
-          for (const [secId, secretaire] of Object.entries(medecin.secretaires) as [string, any][]) {
-            if (secretaire.email === email) {
-              secretaireData = { ...secretaire, id: secId };
+        if (medecin.infirmiers) {
+          for (const [secId, infirmier] of Object.entries(medecin.infirmiers) as [string, any][]) {
+            if (infirmier.email === email) {
+              secretaireData = { ...infirmier, id: secId };
               doctorId = medId;
               break;
             }
@@ -792,7 +804,7 @@ export class FirebaseService {
       }
 
       if (!secretaireData || !doctorId) {
-        throw new Error("Compte secrétaire non trouvé");
+        throw new Error("Compte infirmier non trouvé");
       }
 
       // Récupérer les données du médecin associé
@@ -847,10 +859,10 @@ export class FirebaseService {
           }
 
           // Vérifier parmi les secrétaires de chaque médecin
-          if (medecin.secretaires) {
-            for (const secretaire of Object.values(medecin.secretaires) as any[]) {
-              if (secretaire.cin === userData.cin) {
-                console.log("Ce CIN existe déjà pour un secrétaire:", userData.cin);
+          if (medecin.infirmiers) {
+            for (const infirmier of Object.values(medecin.infirmiers) as any[]) {
+              if (infirmier.cin === userData.cin) {
+                console.log("Ce CIN existe déjà pour un infirmier:", userData.cin);
                 return { success: false, error: "Ce CIN existe déjà dans la base de données." };
               }
             }
@@ -869,13 +881,13 @@ export class FirebaseService {
       }
 
       // Vérifier si le médecin sélectionné a déjà un secrétaire (peu importe l'email)
-      const medecinRef = ref(this.db, `medecins/${userData.doctorId}/secretaires`);
+      const medecinRef = ref(this.db, `medecins/${userData.doctorId}/infirmiers`);
       const medecinSecretairesSnapshot = await get(medecinRef);
       if (medecinSecretairesSnapshot.exists()) {
         const secretairesData = medecinSecretairesSnapshot.val();
         if (Object.keys(secretairesData).length > 0) {
-          console.log("Ce médecin a déjà un secrétaire !");
-          return { success: false, error: "Ce médecin a déjà un secrétaire." };
+          console.log("Ce médecin a déjà un infirmier !");
+          return { success: false, error: "Ce médecin a déjà un infirmier." };
         }
       }
       
@@ -893,19 +905,19 @@ export class FirebaseService {
         cin: userData.cin,
         doctorId: userData.doctorId,
         uid: user.uid,
-        role: 'secretaire',
+        role: 'infirmier',
         dateCreation: new Date().toISOString()
       };
       
-      console.log("Données du secrétaire à enregistrer:", secretaireData);
+      console.log("Données de l'infirmier à enregistrer:", secretaireData);
       
-      // Stocker les données dans la collection 'secretaires'
-      await set(ref(this.db, `medecins/${userData.doctorId}/secretaires/${user.uid}`), secretaireData);
-      console.log("Données du secrétaire enregistrées avec succès");
+      // Stocker les données dans la collection 'infirmiers'
+      await set(ref(this.db, `medecins/${userData.doctorId}/infirmiers/${user.uid}`), secretaireData);
+      console.log("Données de l'infirmier enregistrées avec succès");
       
       return { success: true, user };
     } catch (error: any) {
-      console.error("Erreur d'inscription du secrétaire:", error);
+      console.error("Erreur d'inscription de l'infirmier:", error);
       return { success: false, error: error.message };
     }
   }
@@ -1057,20 +1069,20 @@ export class FirebaseService {
 
   async deleteSecretaire(doctorId: string, secretaireId: string) {
     try {
-      const secretaireRef = ref(this.db, `medecins/${doctorId}/secretaires/${secretaireId}`);
+      const secretaireRef = ref(this.db, `medecins/${doctorId}/infirmiers/${secretaireId}`);
       await remove(secretaireRef);
       return { success: true };
     } catch (error: any) {
-      console.error("Erreur lors de la suppression du secrétaire:", error);
+      console.error("Erreur lors de la suppression de l'infirmier:", error);
       return { success: false, error: error.message };
     }
   }
 
   async getSecretaireByEmail(email: string, nom: string, prenom: string, doctorId: string) {
     try {
-      const snapshot = await get(ref(this.db, `medecins/${doctorId}/secretaires`));
+      const snapshot = await get(ref(this.db, `medecins/${doctorId}/infirmiers`));
       if (!snapshot.exists()) {
-        return { success: false, error: 'Secrétaire non trouvé' };
+        return { success: false, error: 'Infirmier non trouvé' };
       }
       const secretairesData = snapshot.val();
       for (const secretaireId in secretairesData) {
@@ -1080,10 +1092,10 @@ export class FirebaseService {
           return { success: true, secretaire };
         }
       }
-      return { success: false, error: 'Secrétaire non trouvé' };
+      return { success: false, error: 'Infirmier non trouvé' };
     } catch (error: any) {
-      console.error("Erreur lors de la récupération du secrétaire:", error);
-      throw new Error("Impossible de récupérer le secrétaire");
+      console.error("Erreur lors de la récupération de l'infirmier:", error);
+      throw new Error("Impossible de récupérer l'infirmier");
     }
   }
 
@@ -1092,11 +1104,11 @@ export class FirebaseService {
       // Vérifier si le CIN existe déjà pour un autre secrétaire
       const cinExists = await this.checkSecretaireCinExists(secretaireData.cin, doctorId, secretaireId);
       if (cinExists) {
-        return { success: false, error: "Ce numéro de CIN existe déjà pour un autre secrétaire" };
+        return { success: false, error: "Ce numéro de CIN existe déjà pour un autre infirmier" };
       }
 
-      // Mettre à jour les données du secrétaire
-      await set(ref(this.db, `medecins/${doctorId}/secretaires/${secretaireId}`), {
+      // Mettre à jour les données de l'infirmier
+      await set(ref(this.db, `medecins/${doctorId}/infirmiers/${secretaireId}`), {
         ...secretaireData,
         dateModification: new Date().toISOString()
       });
@@ -1109,7 +1121,7 @@ export class FirebaseService {
 
   async checkSecretaireCinExists(cin: string, doctorId: string, currentSecretaireId?: string): Promise<boolean> {
     try {
-      const snapshot = await get(ref(this.db, `medecins/${doctorId}/secretaires`));
+      const snapshot = await get(ref(this.db, `medecins/${doctorId}/infirmiers`));
       if (!snapshot.exists()) return false;
 
       const secretaires = snapshot.val();
@@ -1119,33 +1131,33 @@ export class FirebaseService {
       }
       return false;
     } catch (error) {
-      console.error("Erreur lors de la vérification du CIN du secrétaire:", error);
+      console.error("Erreur lors de la vérification du CIN de l'infirmier:", error);
       return false;
     }
   }
 
   async getSecretaireById(doctorId: string, secretaireId: string) {
     try {
-      const snapshot = await get(ref(this.db, `medecins/${doctorId}/secretaires/${secretaireId}`));
+      const snapshot = await get(ref(this.db, `medecins/${doctorId}/infirmiers/${secretaireId}`));
       if (!snapshot.exists()) {
-        return { success: false, error: 'Secrétaire non trouvé' };
+        return { success: false, error: 'Infirmier non trouvé' };
       }
       return { success: true, secretaire: snapshot.val() };
     } catch (error: any) {
-      console.error("Erreur lors de la récupération du secrétaire:", error);
+      console.error("Erreur lors de la récupération de l'infirmier:", error);
       return { success: false, error: error.message };
     }
   }
 
   async getAllSecretaires(doctorId: string) {
     try {
-      const snapshot = await get(ref(this.db, `medecins/${doctorId}/secretaires`));
+      const snapshot = await get(ref(this.db, `medecins/${doctorId}/infirmiers`));
       if (!snapshot.exists()) {
-        return { success: true, secretaires: {} };
+        return { success: true, infirmiers: {} };
       }
       return { success: true, secretaires: snapshot.val() };
     } catch (error: any) {
-      console.error("Erreur lors de la récupération des secrétaires:", error);
+      console.error("Erreur lors de la récupération des infirmiers:", error);
       return { success: false, error: error.message };
     }
   }

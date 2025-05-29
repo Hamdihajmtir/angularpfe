@@ -26,12 +26,12 @@ interface Doctor {
   email: string;
   nom: string;
   prenom: string;
-  tel?: string;
+  tel: string;
   uid: string;
-  patients?: { [key: string]: Patient };
+  patients: any;
   etat: number;
-  source?: string;
-  secretaires?: { [key: string]: any };
+  source: string;
+  infirmiers: any;
 }
 
 @Component({
@@ -185,7 +185,7 @@ export class DashboardAdminComponent implements OnInit {
   }
 
   async deleteDoctor(doctorId: string) {
-    if (confirm('Êtes-vous sûr de vouloir supprimer ce médecin ? Cette action est irréversible.')) {
+    if (confirm('Êtes-vous sûr de vouloir supprimer ce médecin ?')) {
       try {
         const result = await this.firebaseService.deleteDoctor(doctorId);
         if (result.success) {
@@ -420,8 +420,8 @@ export class DashboardAdminComponent implements OnInit {
   }
 
   getSecretaires(doctor: Doctor): any[] {
-    if (!doctor.secretaires) return [];
-    return Object.values(doctor.secretaires);
+    if (!doctor.infirmiers) return [];
+    return Object.values(doctor.infirmiers);
   }
 
   async addSecretaire(doctor: Doctor) {
@@ -460,16 +460,16 @@ export class DashboardAdminComponent implements OnInit {
           ...this.secretaireForm.value,
           uid: secretaireId,
           doctorId: doctorId,
-          role: 'secretaire'
+          role: 'infirmier'
         };
 
         const result = await this.firebaseService.updateSecretaire(doctorId, secretaireId, secretaireData);
         if (result.success) {
           // Mettre à jour la liste des secrétaires localement
-          if (this.doctors[doctorId]?.secretaires) {
-            this.doctors[doctorId].secretaires![secretaireId] = secretaireData;
+          if (this.doctors[doctorId]?.infirmiers) {
+            this.doctors[doctorId].infirmiers![secretaireId] = secretaireData;
           }
-          this.notificationService.showSuccess('Secrétaire mis à jour avec succès');
+          this.notificationService.showSuccess('Infirmier mis à jour avec succès');
           this.closeSecretaireModal();
         } else {
           this.notificationService.showError(result.error);
@@ -494,10 +494,10 @@ export class DashboardAdminComponent implements OnInit {
       const result = await this.firebaseService.deleteSecretaire(doctorId, secretaireId);
       if (result.success) {
         // Mettre à jour la liste des secrétaires localement
-        if (this.doctors[doctorId]?.secretaires) {
-          delete this.doctors[doctorId].secretaires![secretaireId];
+        if (this.doctors[doctorId]?.infirmiers) {
+          delete this.doctors[doctorId].infirmiers![secretaireId];
         }
-        this.notificationService.showSuccess('Secrétaire supprimé avec succès');
+        this.notificationService.showSuccess('Infirmier supprimé avec succès');
       } else {
         this.notificationService.showError(result.error);
       }
