@@ -51,6 +51,7 @@ export class PatientDetailComponent implements OnInit, OnDestroy {
   // Ajout de propriétés pour les mesures vitales
   heartRate: number = 0;
   oxygenLevel: number = 0;
+  Temperature: number = 0;
   hasMeasurements: boolean = false;
   
   // Ajouter une propriété pour stocker la fonction de nettoyage de l'écouteur
@@ -253,9 +254,9 @@ export class PatientDetailComponent implements OnInit, OnDestroy {
             
             <div style="margin-bottom: 20px;">
               <h3>Signes Vitaux (${formattedDate}, ${formattedTime})</h3>
-              <p><strong>Rythme Cardiaque:</strong> 77 bpm</p>
-              <p><strong>Oxygène:</strong> 94%</p>
-              <p><strong>Température:</strong> 36.1°C</p>
+              <p><strong>Rythme Cardiaque:</strong> ${this.heartRate} bpm</p>
+              <p><strong>Oxygène:</strong> ${this.oxygenLevel}%</p>
+              <p><strong>Température:</strong> ${this.Temperature}°C</p>
             </div>
             
             <div style="margin-bottom: 20px;">
@@ -327,9 +328,9 @@ export class PatientDetailComponent implements OnInit, OnDestroy {
         
         <div style="margin-bottom: 20px;">
           <h3 style="color: #1E5F74; border-bottom: 1px solid #ddd; padding-bottom: 5px;">Signes Vitaux (${formattedDate}, ${formattedTime})</h3>
-          <p style="margin: 5px 0;"><strong>Rythme Cardiaque:</strong> 77 bpm</p>
-          <p style="margin: 5px 0;"><strong>Oxygène:</strong> 94%</p>
-          <p style="margin: 5px 0;"><strong>Température:</strong> 36.1°C</p>
+          <p style="margin: 5px 0;"><strong>Rythme Cardiaque:</strong> ${this.heartRate} bpm</p>
+          <p style="margin: 5px 0;"><strong>Oxygène:</strong> ${this.oxygenLevel}%</p>
+          <p style="margin: 5px 0;"><strong>Température:</strong> ${this.Temperature}°C</p>
         </div>
         
         <div style="margin-bottom: 20px;">
@@ -686,10 +687,11 @@ export class PatientDetailComponent implements OnInit, OnDestroy {
     this.measurementUnsubscribe = this.firebaseService.observeMeasurementsByBraceletCode(
       braceletCode,
       (measures) => {
-        if (measures && measures.BPM !== undefined && measures.SpO2 !== undefined) {
+        if (measures && measures.BPM !== undefined && measures.SpO2 !== undefined && measures.Temperature !== undefined) {
           this.hasMeasurements = true;
           this.heartRate = measures.BPM || 0;
           this.oxygenLevel = measures.SpO2 || 0;
+          this.Temperature = measures.Temperature || 0;
           
           // Créer le timestamp au format Firebase
           const now = new Date();
@@ -706,7 +708,7 @@ export class PatientDetailComponent implements OnInit, OnDestroy {
               chart.data.labels.push(timestamp);
               chart.data.datasets[0].data.push(measures.BPM);
               chart.data.datasets[1].data.push(measures.SpO2);
-              chart.data.datasets[2].data.push(measures.temperature);
+              chart.data.datasets[2].data.push(measures.Temperature);
               
               // Garder les 50 dernières mesures
               if (chart.data.labels.length > 50) {
@@ -721,6 +723,7 @@ export class PatientDetailComponent implements OnInit, OnDestroy {
           this.hasMeasurements = false;
           this.heartRate = 0;
           this.oxygenLevel = 0;
+          this.Temperature = 0;
         }
       }
     );
@@ -737,7 +740,7 @@ export class PatientDetailComponent implements OnInit, OnDestroy {
         timestamp: timestamp,
         BPM: values.BPM ?? null,
         SpO2: values.SpO2 ?? null,
-        temperature: values.temperature ?? null
+        Temperature: values.Temperature ?? null
       }))
       .sort((a, b) => {
         // Convertir les timestamps pour le tri (remplacer les underscores par des :)
@@ -750,7 +753,7 @@ export class PatientDetailComponent implements OnInit, OnDestroy {
     const labels = entries.map(e => e.timestamp);
     const bpmData = entries.map(e => e.BPM);
     const spo2Data = entries.map(e => e.SpO2);
-    const tempData = entries.map(e => e.temperature);
+    const tempData = entries.map(e => e.Temperature);
 
     this.updateProChart(labels, bpmData, spo2Data, tempData);
   }
@@ -918,7 +921,7 @@ export class PatientDetailComponent implements OnInit, OnDestroy {
           localStorage.removeItem('chartState');
         }
       } catch (e) {
-        console.error('Erreur lors du chargement de l\'état du graphique:', e);
+        console.error('Error loading chart state:', e);
         localStorage.removeItem('chartState');
       }
     }

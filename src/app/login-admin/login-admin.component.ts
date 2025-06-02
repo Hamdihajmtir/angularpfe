@@ -65,9 +65,8 @@ export class LoginAdminComponent implements OnInit {
     this.router.navigate(['/signup-admin']);
   }
 
-  goToForgotPassword(): void {
-    // TODO: Implémenter la récupération de mot de passe
-    console.log('Forgot password clicked');
+  goToForgotPassword() {
+    this.router.navigate(['/forgot-password']);
   }
   goToChooseLogin() {
     this.router.navigate(['/choisi-le-login']);

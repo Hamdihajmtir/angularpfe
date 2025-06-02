@@ -570,18 +570,18 @@ export class FirebaseService {
       }
       
       // Vérification de la température (> 38°C ou < 35°C)
-      if (measures.temperature =38) {
+      if (measures.Temperature >= 38) {
         this.notificationService.addNotification({
           title: 'Alerte Fièvre',
-          message: `Le patient ${patient.prenom} ${patient.nom} a une température de ${measures.temperature}°C (Hyperthermie)`,
+          message: `Le patient ${patient.prenom} ${patient.nom} a une température de ${measures.Temperature}°C (Hyperthermie)`,
           type: 'temperature-critical',
           patientId: patient.id,
           patientName: `${patient.prenom} ${patient.nom}`
         });
-      } else if (measures.temperature < 35) {
+      } else if (measures.Temperature < 35) {
         this.notificationService.addNotification({
           title: 'Alerte Hypothermie',
-          message: `Le patient ${patient.prenom} ${patient.nom} a une température de ${measures.temperature}°C (Hypothermie)`,
+          message: `Le patient ${patient.prenom} ${patient.nom} a une température de ${measures.Temperature}°C (Hypothermie)`,
           type: 'temperature-critical',
           patientId: patient.id,
           patientName: `${patient.prenom} ${patient.nom}`
@@ -638,6 +638,9 @@ export class FirebaseService {
       const userCredential = await createUserWithEmailAndPassword(this.auth, email, password);
       const user = userCredential.user;
       
+      // Envoyer l'email de vérification
+      await sendEmailVerification(user);
+      
       // Créer un objet complet avec toutes les propriétés nécessaires
       const adminData = {
         nom: userData.lastName || '',
@@ -646,7 +649,8 @@ export class FirebaseService {
         phone: userData.phone || '',
         uid: user.uid,
         role: 'admin',
-        dateCreation: new Date().toISOString()
+        dateCreation: new Date().toISOString(),
+        emailVerified: false // Ajouter le statut de vérification de l'email
       };
       
       await set(ref(this.db, 'admins/' + user.uid), adminData);
@@ -663,6 +667,15 @@ export class FirebaseService {
     try {
       const userCredential = await signInWithEmailAndPassword(this.auth, email, password);
       const user = userCredential.user;
+
+      // Vérifier si l'email est vérifié
+      if (!user.emailVerified) {
+        await signOut(this.auth);
+        return { 
+          success: false, 
+          error: "Veuillez vérifier votre email avant de vous connecter. Un email de vérification a été envoyé à votre adresse." 
+        };
+      }
 
       const snapshot = await get(child(ref(this.db), `admins/${user.uid}`));
       if (snapshot.exists()) {

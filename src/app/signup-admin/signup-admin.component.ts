@@ -146,7 +146,7 @@ export class SignupAdminComponent implements OnInit {
         
         if (result.success) {
           console.log('Inscription admin réussie');
-          this.router.navigate(['/login']);
+          this.router.navigate(['/login-admin']);
         } else {
           this.errorMessage = result.error || "Une erreur s'est produite lors de l'inscription";
         }
@@ -162,6 +162,6 @@ export class SignupAdminComponent implements OnInit {
   }
 
   goToLogin(): void {
-    this.router.navigate(['/login']);
+    this.router.navigate(['/login-admin']);
   }
 }
