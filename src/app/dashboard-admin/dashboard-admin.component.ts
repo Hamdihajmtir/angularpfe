@@ -8,6 +8,7 @@ import { FaIconLibrary } from '@fortawesome/angular-fontawesome';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { NotificationService } from '../services/notification.service';
+import { NavigationEnd } from '@angular/router';
 
 interface Patient {
   id: string;
@@ -32,6 +33,7 @@ interface Doctor {
   etat: number;
   source: string;
   infirmiers: any;
+  cin: string;
 }
 
 @Component({
@@ -91,7 +93,8 @@ export class DashboardAdminComponent implements OnInit {
       nom: ['', Validators.required],
       prenom: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
-      tel: ['', [Validators.required, Validators.pattern(/^[0-9]{10}$/)]]
+      tel: ['', [Validators.required, Validators.pattern(/^[0-9]{8}$/)]],
+      cin: ['', [Validators.required, Validators.pattern(/^[0-9]{8}$/)]]
     });
 
     this.patientForm = this.formBuilder.group({
@@ -115,6 +118,29 @@ export class DashboardAdminComponent implements OnInit {
   async ngOnInit() {
     await this.loadDoctors();
     this.loadThemePreference();
+
+    // S'abonner aux changements de route
+    this.router.events.subscribe(async (event) => {
+      if (event instanceof NavigationEnd) {
+        // Si on revient au dashboard principal
+        if (event.url === '/dashboard-admin') {
+          // Vérifier s'il y a des données mises à jour dans le localStorage
+          const updatedDoctorData = localStorage.getItem('updatedDoctorData');
+          if (updatedDoctorData) {
+            const doctor = JSON.parse(updatedDoctorData);
+            // Mettre à jour les données du médecin dans la liste locale
+            if (doctor.uid) {
+              this.doctors[doctor.uid] = doctor;
+            }
+            // Supprimer les données du localStorage
+            localStorage.removeItem('updatedDoctorData');
+          } else {
+            // Si pas de données mises à jour, recharger tous les médecins
+            await this.loadDoctors();
+          }
+        }
+      }
+    });
   }
 
   async loadDoctors() {
@@ -173,15 +199,28 @@ export class DashboardAdminComponent implements OnInit {
   }
 
   async editDoctor(doctor: Doctor) {
-    console.log('Édition du médecin:', doctor);
-    this.editingDoctor = doctor;
-    this.doctorForm.setValue({
-      nom: doctor.nom,
-      prenom: doctor.prenom,
-      email: doctor.email,
-      tel: doctor.tel || ''
-    });
-    this.isDoctorModalOpen = true;
+    try {
+      // Récupérer les données complètes du médecin
+      const result = await this.firebaseService.getMedecinByUid(doctor.uid).toPromise();
+      if (!result) {
+        this.notificationService.showError('Impossible de récupérer les informations du médecin');
+        return;
+      }
+
+      this.editingDoctor = result;
+      this.doctorForm.setValue({
+        nom: result.nom || '',
+        prenom: result.prenom || '',
+        email: result.email || '',
+        tel: result.tel || '',
+        cin: result.cin || ''
+      });
+
+      // Activer la modale
+      this.isDoctorModalOpen = true;
+    } catch (error: any) {
+      this.notificationService.showError(error.message || 'Une erreur est survenue lors de l\'édition du médecin');
+    }
   }
 
   async deleteDoctor(doctorId: string) {
@@ -254,7 +293,6 @@ export class DashboardAdminComponent implements OnInit {
   }
 
   closeDoctorModal() {
-    console.log('Fermeture de la modale médecin');
     this.isDoctorModalOpen = false;
     this.doctorForm.reset();
     this.editingDoctor = null;
@@ -266,38 +304,88 @@ export class DashboardAdminComponent implements OnInit {
         const doctorData = this.doctorForm.value;
         
         if (this.editingDoctor) {
+          // Vérifier si le CIN a été modifié
+          if (doctorData.cin !== this.editingDoctor.cin) {
+            // Vérifier si le nouveau CIN existe déjà
+            const cinExists = await this.checkDoctorCinExists(doctorData.cin, this.editingDoctor.uid);
+            if (cinExists) {
+              this.notificationService.showError('Ce numéro de CIN existe déjà pour un autre médecin');
+              return;
+            }
+          }
+
           // Mise à jour d'un médecin existant
-          const result = await this.firebaseService.updateDoctor(this.editingDoctor.uid, doctorData);
+          const result = await this.firebaseService.editDoctor(this.editingDoctor.uid, {
+            ...this.editingDoctor,
+            ...doctorData,
+            dateModification: new Date().toISOString()
+          });
+
           if (result.success) {
-            // Mettre à jour la liste des médecins
+            // Mettre à jour la liste des médecins localement
             this.doctors[this.editingDoctor.uid] = {
               ...this.editingDoctor,
               ...doctorData
             };
-            alert('Médecin mis à jour avec succès');
+            this.notificationService.showSuccess('Médecin mis à jour avec succès');
             this.closeDoctorModal();
           } else {
-            alert('Erreur lors de la mise à jour du médecin: ' + result.error);
+            this.notificationService.showError(result.error || 'Erreur lors de la mise à jour du médecin');
           }
         } else {
+          // Vérifier si le CIN existe déjà pour un nouveau médecin
+          const cinExists = await this.checkDoctorCinExists(doctorData.cin);
+          if (cinExists) {
+            this.notificationService.showError('Ce numéro de CIN existe déjà pour un autre médecin');
+            return;
+          }
+
           // Ajout d'un nouveau médecin
           const result = await this.firebaseService.registerDoctor(
             doctorData.email,
             'password123', // Mot de passe temporaire
             doctorData
           );
+
           if (result.success) {
             // Recharger la liste des médecins
             await this.loadDoctors();
-            alert('Médecin ajouté avec succès');
+            this.notificationService.showSuccess('Médecin ajouté avec succès');
             this.closeDoctorModal();
           } else {
-            alert('Erreur lors de l\'ajout du médecin: ' + result.error);
+            this.notificationService.showError(result.error || 'Erreur lors de l\'ajout du médecin');
           }
         }
       } catch (error: any) {
-        alert('Erreur: ' + error.message);
+        this.notificationService.showError(error.message || 'Une erreur est survenue');
       }
+    } else {
+      // Marquer tous les champs comme touchés pour afficher les erreurs
+      Object.keys(this.doctorForm.controls).forEach(key => {
+        const control = this.doctorForm.get(key);
+        control?.markAsTouched();
+      });
+    }
+  }
+
+  // Méthode pour vérifier si un CIN existe déjà pour un médecin
+  async checkDoctorCinExists(cin: string, currentDoctorId?: string): Promise<boolean> {
+    try {
+      // Vérifier dans tous les médecins
+      for (const doctorId in this.doctors) {
+        // Ignorer le médecin actuel lors de la vérification
+        if (currentDoctorId && doctorId === currentDoctorId) {
+          continue;
+        }
+        const doctor = this.doctors[doctorId];
+        if (doctor.cin === cin) {
+          return true; // CIN trouvé
+        }
+      }
+      return false; // CIN non trouvé
+    } catch (error) {
+      console.error('Erreur lors de la vérification du CIN:', error);
+      return false;
     }
   }
 
@@ -425,6 +513,8 @@ export class DashboardAdminComponent implements OnInit {
   }
 
   async addSecretaire(doctor: Doctor) {
+    // Sauvegarder l'ID du médecin dans le localStorage pour le récupérer plus tard
+    localStorage.setItem('selectedDoctorId', doctor.uid);
     this.router.navigate(['/dashboard-admin/generate-secretaire'], {
       queryParams: { doctorId: doctor.uid }
     });

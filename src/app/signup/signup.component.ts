@@ -8,7 +8,9 @@ import {
   faUser, 
   faEnvelope, 
   faLock, 
-  faUserPlus 
+  faUserPlus,
+  faPhone,
+  faIdCard
 } from '@fortawesome/free-solid-svg-icons';
 import { FirebaseService } from '../services/firebase.service';
 import { NotificationService } from '../services/notification.service';
@@ -31,6 +33,8 @@ export class SignupComponent implements OnInit {
   faEnvelope = faEnvelope;
   faLock = faLock;
   faUserPlus = faUserPlus;
+  faPhone = faPhone;
+  faIdCard = faIdCard;
 
   constructor(
     private fb: FormBuilder,
@@ -49,7 +53,9 @@ export class SignupComponent implements OnInit {
         Validators.minLength(8),
         this.passwordValidator()
       ]],
-      confirmPassword: ['', Validators.required]
+      confirmPassword: ['', Validators.required],
+      tel: ['', [Validators.required, Validators.pattern(/^[0-9]{8}$/)]],
+      cin: ['', [Validators.required, Validators.pattern(/^[0-9]{8}$/)]]
     }, { validator: this.checkPasswords });
   }
 
@@ -129,12 +135,28 @@ export class SignupComponent implements OnInit {
       this.errorMessage = '';
       
       try {
-        const { email, password, nom, prenom } = this.signupForm.value;
+        const { email, password, nom, prenom, tel, cin } = this.signupForm.value;
+        
+        // Vérifier si le CIN existe déjà
+        const cinExists = await this.checkCinExists(cin);
+        if (cinExists) {
+          this.errorMessage = "Ce numéro de CIN existe déjà dans la base de données.";
+          this.isLoading = false;
+          return;
+        }
         
         const result = await this.firebaseService.registerDoctor(
           email, 
           password, 
-          { nom, prenom, email }
+          { 
+            nom, 
+            prenom, 
+            email,
+            tel,
+            cin,
+            role: 'medecin',
+            dateCreation: new Date().toISOString()
+          }
         );
         
         if (result.success) {
@@ -154,6 +176,17 @@ export class SignupComponent implements OnInit {
       }
     } else {
       this.errorMessage = "Veuillez remplir correctement tous les champs";
+    }
+  }
+
+  // Méthode pour vérifier si un CIN existe déjà
+  async checkCinExists(cin: string): Promise<boolean> {
+    try {
+      const result = await this.firebaseService.checkIfMedecin(cin);
+      return result;
+    } catch (error) {
+      console.error('Erreur lors de la vérification du CIN:', error);
+      return false;
     }
   }
 

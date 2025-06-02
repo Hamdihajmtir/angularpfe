@@ -225,6 +225,13 @@ export class GenerateSecretaireComponent implements OnInit {
         );
 
         if (result.success) {
+          // Mettre à jour les données du médecin dans le localStorage
+          const doctorId = formData.doctorId;
+          const doctorResult = await this.firebaseService.getMedecinByUid(doctorId).toPromise();
+          if (doctorResult) {
+            localStorage.setItem('updatedDoctorData', JSON.stringify(doctorResult));
+          }
+          
           alert('Compte secrétaire créé avec succès');
           this.router.navigate(['/dashboard-admin']);
         } else {

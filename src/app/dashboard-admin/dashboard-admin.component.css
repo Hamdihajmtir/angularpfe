@@ -896,3 +896,119 @@
 .delete-btn:hover {
   background: #fecaca;
 }
+
+/* Styles pour la modale d'édition de médecin */
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #333;
+  font-weight: 500;
+}
+
+.form-control {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+  transition: border-color 0.3s;
+}
+
+.form-control:focus {
+  border-color: #1E5F74;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(30, 95, 116, 0.2);
+}
+
+.form-control[readonly] {
+  background-color: #f5f5f5;
+  cursor: not-allowed;
+}
+
+.error-message {
+  color: #dc3545;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid #eee;
+}
+
+.btn {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 4px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-primary {
+  background-color: #1E5F74;
+  color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: #164a5a;
+}
+
+.btn-primary:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  background-color: #6c757d;
+  color: white;
+}
+
+.btn-secondary:hover {
+  background-color: #5a6268;
+}
+
+/* Dark mode styles for the modal */
+:host-context(.dark-mode) .modal-content {
+  background-color: #2d2d2d;
+  color: #ffffff;
+}
+
+:host-context(.dark-mode) .form-group label {
+  color: #ffffff;
+}
+
+:host-context(.dark-mode) .form-control {
+  background-color: #1a1a1a;
+  border-color: #444;
+  color: #ffffff;
+}
+
+:host-context(.dark-mode) .form-control:focus {
+  border-color: #4a90e2;
+  box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+}
+
+:host-context(.dark-mode) .form-control[readonly] {
+  background-color: #333;
+}
+
+:host-context(.dark-mode) .modal-footer {
+  border-top-color: #444;
+}
+
+:host-context(.dark-mode) .btn-secondary {
+  background-color: #444;
+}
+
+:host-context(.dark-mode) .btn-secondary:hover {
+  background-color: #555;
+}

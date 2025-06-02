@@ -94,6 +94,8 @@ export class FirebaseService {
         email: userData.email,
         nom: userData.nom,
         prenom: userData.prenom,
+        tel: userData.tel,
+        cin: userData.cin,
         etat: 2, // État initial à 2 (en attente)
         patients: {},
         uid: user.uid,
@@ -692,9 +694,6 @@ export class FirebaseService {
   // Supprimer un médecin
   async deleteDoctor(doctorId: string) {
     try {
-      // Supprimer le compte d'authentification
-      await deleteUser(this.auth.currentUser!);
-      
       // Supprimer les données du médecin dans la base de données
       await set(ref(this.db, `medecins/${doctorId}`), null);
       
@@ -1161,4 +1160,15 @@ export class FirebaseService {
       return { success: false, error: error.message };
     }
   }
+  async editDoctor(doctorId: string, doctorData: any) {
+    try {
+      await set(ref(this.db, `medecins/${doctorId}`), doctorData);
+      return { success: true };
+    } catch (error: any) {
+      console.error("Erreur lors de la mise à jour du médecin:", error);
+      return { success: false, error: error.message };
+    }
+  }
+  
+  
 }

@@ -178,6 +178,28 @@ body.dark #sidebar .brand {
 #sidebar .side-menu li a i {
 	font-size: 20px;
 	color: rgba(255, 255, 255, 0.9);
+	min-width: 24px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+#sidebar .side-menu li a:hover i,
+#sidebar .side-menu li.active a i {
+	color: #4FCBEB;
+}
+
+#sidebar .side-menu li a i.bx-watch-alt {
+	display: inline-block !important;
+	font-size: 20px !important;
+	color: rgba(255, 255, 255, 0.9) !important;
+	min-width: 24px !important;
+	text-align: center !important;
+}
+
+#sidebar .side-menu li a:hover i.bx-watch-alt,
+#sidebar .side-menu li.active a i.bx-watch-alt {
+	color: #4FCBEB !important;
 }
 
 #sidebar .side-menu.top li.active a {

@@ -2,7 +2,7 @@
   <div class="signup-card">
     <div class="signup-header">
       <fa-icon [icon]="faUserDoctor" style="font-size: 60px; color: #1E5F74;"></fa-icon>
-      <h1>Ajouter un médecin</h1>
+      <h1>S'inscrire</h1>
       <p>Créez un compte pour un nouveau médecin</p>
     </div>
     
@@ -89,18 +89,33 @@
         <label for="confirmPassword">
           <fa-icon [icon]="faLock"></fa-icon> Confirmer le mot de passe
         </label>
-        <input 
-          type="password" 
-          id="confirmPassword" 
-          formControlName="confirmPassword" 
-          placeholder="Confirmez le mot de passe"
-          [class.is-invalid]="signupForm.get('confirmPassword')?.invalid && signupForm.get('confirmPassword')?.touched"
-        >
-        <div class="error-message" *ngIf="signupForm.get('confirmPassword')?.invalid && signupForm.get('confirmPassword')?.touched">
-          <small *ngIf="signupForm.get('confirmPassword')?.errors?.['required']">Confirmation du mot de passe requise</small>
+        <div class="input-group">
+          <input type="password" id="confirmPassword" formControlName="confirmPassword" class="form-control" placeholder="Confirmez votre mot de passe">
         </div>
-        <div class="error-message" *ngIf="signupForm.errors?.['notSame']">
-          <small>Les mots de passe ne correspondent pas</small>
+        <div class="error-message" *ngIf="signupForm.get('confirmPassword')?.touched && signupForm.hasError('notSame')">
+          Les mots de passe ne correspondent pas
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label for="tel">Numéro de téléphone</label>
+        <div class="input-group">
+          <fa-icon [icon]="faPhone" class="input-icon" style="color: #164b5d;"></fa-icon>
+          <input type="tel" id="tel" formControlName="tel" class="form-control" placeholder="Entrez votre numéro de téléphone">
+        </div>
+        <div class="error-message" *ngIf="signupForm.get('tel')?.invalid && signupForm.get('tel')?.touched">
+          Le numéro de téléphone doit contenir 8 chiffres
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label for="cin">Numéro CIN</label>
+        <div class="input-group">
+          <fa-icon [icon]="faIdCard" class="input-icon" style="color: #164b5d;"></fa-icon>
+          <input type="text" id="cin" formControlName="cin" class="form-control" placeholder="Entrez votre numéro CIN">
+        </div>
+        <div class="error-message" *ngIf="signupForm.get('cin')?.invalid && signupForm.get('cin')?.touched">
+          Le numéro CIN doit contenir 8 chiffres
         </div>
       </div>
       
@@ -113,7 +128,7 @@
         <button type="button" class="btn-secondary" (click)="goBack()">Annuler</button>
         <button type="submit" class="btn-primary" [disabled]="signupForm.invalid || isLoading">
           <fa-icon [icon]="faUserPlus"></fa-icon> 
-          <span *ngIf="!isLoading">Ajouter le médecin</span>
+          <span *ngIf="!isLoading">S'inscrire</span>
           <span *ngIf="isLoading">Chargement...</span>
         </button>
       </div>

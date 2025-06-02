@@ -66,7 +66,7 @@
               <h3>Dr. {{ doctor.prenom }} {{ doctor.nom }}</h3>
             </div>
             <div class="doctor-actions">
-              <button class="edit-btn" (click)="editDoctor(doctor)" [disabled]="doctor.etat === 0">
+              <button class="edit-btn" (click)="editDoctor(doctor)">
                 <fa-icon [icon]="faEdit"></fa-icon>
               </button>
               <button class="delete-btn" (click)="deleteDoctor(doctor.uid)">
@@ -254,6 +254,68 @@
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" (click)="closeSecretaireModal()">Annuler</button>
           <button type="submit" class="btn btn-primary" [disabled]="secretaireForm.invalid">Enregistrer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal d'édition des médecins -->
+<div class="modal" [class.show]="isDoctorModalOpen">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>{{ editingDoctor ? 'Modifier le médecin' : 'Ajouter un médecin' }}</h2>
+      <button class="close-btn" (click)="closeDoctorModal()">
+        <fa-icon [icon]="faTimes"></fa-icon>
+      </button>
+    </div>
+    <div class="modal-body">
+      <form [formGroup]="doctorForm" (ngSubmit)="updateDoctor()">
+        <div class="form-group">
+          <label for="nom">Nom</label>
+          <input type="text" id="nom" formControlName="nom" class="form-control">
+          <div class="error-message" *ngIf="doctorForm.get('nom')?.invalid && doctorForm.get('nom')?.touched">
+            Le nom est requis
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="prenom">Prénom</label>
+          <input type="text" id="prenom" formControlName="prenom" class="form-control">
+          <div class="error-message" *ngIf="doctorForm.get('prenom')?.invalid && doctorForm.get('prenom')?.touched">
+            Le prénom est requis
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input type="email" id="email" formControlName="email" class="form-control" [readonly]="editingDoctor">
+          <div class="error-message" *ngIf="doctorForm.get('email')?.invalid && doctorForm.get('email')?.touched">
+            Veuillez entrer un email valide
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="tel">Téléphone</label>
+          <input type="tel" id="tel" formControlName="tel" class="form-control">
+          <div class="error-message" *ngIf="doctorForm.get('tel')?.invalid && doctorForm.get('tel')?.touched">
+            Le numéro de téléphone doit contenir 10 chiffres
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="cin">Numéro CIN</label>
+          <input type="text" id="cin" formControlName="cin" class="form-control">
+          <div class="error-message" *ngIf="doctorForm.get('cin')?.invalid && doctorForm.get('cin')?.touched">
+            Le numéro CIN doit contenir 8 chiffres
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeDoctorModal()">Annuler</button>
+          <button type="submit" class="btn btn-primary" [disabled]="doctorForm.invalid">
+            {{ editingDoctor ? 'Mettre à jour' : 'Ajouter' }}
+          </button>
         </div>
       </form>
     </div>
